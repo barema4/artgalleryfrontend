@@ -28,15 +28,28 @@ export interface UserPreferences {
   updatedAt: string
 }
 
+export interface UserArtistProfile {
+  id: string
+  slug: string
+  displayName: string
+  verified: boolean
+  featured: boolean
+  artworkCount: number
+  followerCount: number
+}
+
 export interface User {
   id: string
   email: string
   role: UserRole
-  status?: UserStatus
-  emailVerified?: boolean
+  status: UserStatus
+  emailVerified: boolean
   profile?: UserProfile
   preferences?: UserPreferences
-  createdAt?: string
+  artistProfile?: UserArtistProfile
+  createdAt: string
+  updatedAt: string
+  lastLoginAt?: string
 }
 
 export interface UpdateProfileData {

@@ -1,209 +1,296 @@
-export interface Artwork {
-  id: string
-  title: string
-  artist: string
-  description: string
-  imageUrl: string
-  price: number
-  category: string
-  year: number
-  sold: boolean
-}
-
-const sampleArtworks: Artwork[] = [
-  {
-    id: '1',
-    title: 'Sunset Over Mountains',
-    artist: 'Elena Rodriguez',
-    description: 'A vibrant oil painting capturing the golden hour over mountain peaks.',
-    imageUrl: 'https://picsum.photos/seed/art1/800/600',
-    price: 2500,
-    category: 'Painting',
-    year: 2023,
-    sold: false,
-  },
-  {
-    id: '2',
-    title: 'Urban Reflections',
-    artist: 'Marcus Chen',
-    description: 'Abstract cityscape reflecting modern urban life.',
-    imageUrl: 'https://picsum.photos/seed/art2/800/600',
-    price: 3200,
-    category: 'Painting',
-    year: 2024,
-    sold: false,
-  },
-  {
-    id: '3',
-    title: 'Serenity in Blue',
-    artist: 'Sofia Andersson',
-    description: 'Minimalist sculpture exploring tranquility through form.',
-    imageUrl: 'https://picsum.photos/seed/art3/800/600',
-    price: 4800,
-    category: 'Sculpture',
-    year: 2023,
-    sold: true,
-  },
-  {
-    id: '4',
-    title: 'Digital Dreams',
-    artist: 'James Wright',
-    description: 'A striking digital artwork blending reality and imagination.',
-    imageUrl: 'https://picsum.photos/seed/art4/800/600',
-    price: 1800,
-    category: 'Digital',
-    year: 2024,
-    sold: false,
-  },
-  {
-    id: '5',
-    title: 'Garden at Dusk',
-    artist: 'Elena Rodriguez',
-    description: 'Impressionist view of a peaceful garden in evening light.',
-    imageUrl: 'https://picsum.photos/seed/art5/800/600',
-    price: 2800,
-    category: 'Painting',
-    year: 2022,
-    sold: false,
-  },
-  {
-    id: '6',
-    title: 'Bronze Harmony',
-    artist: 'David Okonkwo',
-    description: 'Contemporary bronze sculpture representing balance.',
-    imageUrl: 'https://picsum.photos/seed/art6/800/600',
-    price: 6500,
-    category: 'Sculpture',
-    year: 2023,
-    sold: false,
-  },
-  {
-    id: '7',
-    title: 'Neon Nights',
-    artist: 'James Wright',
-    description: 'Vibrant digital composition inspired by city nightlife.',
-    imageUrl: 'https://picsum.photos/seed/art7/800/600',
-    price: 1500,
-    category: 'Digital',
-    year: 2024,
-    sold: true,
-  },
-  {
-    id: '8',
-    title: 'Ocean Whispers',
-    artist: 'Sofia Andersson',
-    description: 'Watercolor seascape evoking calm and wonder.',
-    imageUrl: 'https://picsum.photos/seed/art8/800/600',
-    price: 2200,
-    category: 'Painting',
-    year: 2023,
-    sold: false,
-  },
-  {
-    id: '9',
-    title: 'Fragments of Time',
-    artist: 'Marcus Chen',
-    description: 'Mixed media piece exploring memory and impermanence.',
-    imageUrl: 'https://picsum.photos/seed/art9/800/600',
-    price: 3800,
-    category: 'Mixed Media',
-    year: 2024,
-    sold: false,
-  },
-  {
-    id: '10',
-    title: 'Portrait of Silence',
-    artist: 'Amara Johnson',
-    description: 'Charcoal portrait capturing introspective emotion.',
-    imageUrl: 'https://picsum.photos/seed/art10/800/600',
-    price: 1900,
-    category: 'Drawing',
-    year: 2023,
-    sold: false,
-  },
-  {
-    id: '11',
-    title: 'Geometric Flow',
-    artist: 'David Okonkwo',
-    description: 'Steel sculpture with flowing geometric patterns.',
-    imageUrl: 'https://picsum.photos/seed/art11/800/600',
-    price: 7200,
-    category: 'Sculpture',
-    year: 2024,
-    sold: false,
-  },
-  {
-    id: '12',
-    title: 'Autumn Memories',
-    artist: 'Amara Johnson',
-    description: 'Warm-toned landscape celebrating the fall season.',
-    imageUrl: 'https://picsum.photos/seed/art12/800/600',
-    price: 2100,
-    category: 'Painting',
-    year: 2022,
-    sold: true,
-  },
-]
+import { defineStore } from 'pinia'
+import type {
+  Artwork,
+  ArtworkListParams,
+  ArtworkListResponse,
+  ArtworkStatus,
+  CreateArtworkData,
+  UpdateArtworkData,
+  CreateArtworkImageData,
+  ArtworkImage,
+  ArtworkStats,
+} from '~/types/artwork'
+import { useArtworkService } from '~/services/artwork.service'
 
 export const useArtworksStore = defineStore('artworks', {
   state: () => ({
     artworks: [] as Artwork[],
+    currentArtwork: null as Artwork | null,
+    currentArtworkStats: null as ArtworkStats | null,
     loading: false,
     error: null as string | null,
+    pagination: {
+      total: 0,
+      page: 1,
+      limit: 12,
+      totalPages: 0,
+    },
   }),
 
   getters: {
-    availableArtworks: (state) => state.artworks.filter((a) => !a.sold),
-    soldArtworks: (state) => state.artworks.filter((a) => a.sold),
+    availableArtworks: (state) => state.artworks.filter((a) => a.status === 'AVAILABLE'),
+    soldArtworks: (state) => state.artworks.filter((a) => a.status === 'SOLD'),
+    draftArtworks: (state) => state.artworks.filter((a) => a.status === 'DRAFT'),
+    featuredArtworks: (state) => state.artworks.filter((a) => a.featured),
     getById: (state) => (id: string) => state.artworks.find((a) => a.id === id),
-    byCategory: (state) => (category: string) =>
-      state.artworks.filter((a) => a.category === category),
-    byArtist: (state) => (artist: string) =>
-      state.artworks.filter((a) => a.artist === artist),
+    byCategory: (state) => (categoryId: string) =>
+      state.artworks.filter((a) => a.categoryId === categoryId),
+    byArtist: (state) => (artistId: string) =>
+      state.artworks.filter((a) => a.artistId === artistId),
   },
 
   actions: {
-    async fetchArtworks() {
+    async fetchArtworks(params?: ArtworkListParams) {
       this.loading = true
       this.error = null
       try {
-        // TODO: Replace with your API endpoint
-        // const data = await $fetch<Artwork[]>('/api/artworks')
-        // this.artworks = data
-
-        // Using sample data for testing
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        this.artworks = sampleArtworks
-      } catch (e) {
-        this.error = 'Failed to fetch artworks'
+        const artworkService = useArtworkService()
+        const response: ArtworkListResponse = await artworkService.getArtworks(params)
+        this.artworks = response.data
+        this.pagination = {
+          total: response.total,
+          page: response.page,
+          limit: response.limit,
+          totalPages: response.totalPages,
+        }
+      } catch (e: any) {
+        this.error = e?.data?.message || e?.message || 'Failed to fetch artworks'
+        console.error('Failed to fetch artworks:', e)
       } finally {
         this.loading = false
       }
     },
 
-    addArtwork(artwork: Artwork) {
-      this.artworks.push(artwork)
-    },
-
-    removeArtwork(id: string) {
-      const index = this.artworks.findIndex((a) => a.id === id)
-      if (index > -1) {
-        this.artworks.splice(index, 1)
+    async fetchArtworkBySlug(slug: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const artworkService = useArtworkService()
+        this.currentArtwork = await artworkService.getArtworkBySlug(slug)
+        return this.currentArtwork
+      } catch (e: any) {
+        this.error = e?.data?.message || e?.message || 'Failed to fetch artwork'
+        console.error('Failed to fetch artwork:', e)
+        return null
+      } finally {
+        this.loading = false
       }
     },
 
-    updateArtwork(id: string, updates: Partial<Artwork>) {
-      const artwork = this.artworks.find((a) => a.id === id)
-      if (artwork) {
-        Object.assign(artwork, updates)
+    async fetchArtworkStats(id: string) {
+      try {
+        const artworkService = useArtworkService()
+        this.currentArtworkStats = await artworkService.getArtworkStats(id)
+        return this.currentArtworkStats
+      } catch (e: any) {
+        console.error('Failed to fetch artwork stats:', e)
+        return null
       }
     },
 
-    markAsSold(id: string) {
-      const artwork = this.artworks.find((a) => a.id === id)
-      if (artwork) {
-        artwork.sold = true
+    async createArtwork(data: CreateArtworkData) {
+      this.loading = true
+      this.error = null
+      try {
+        const artworkService = useArtworkService()
+        const artwork = await artworkService.createArtwork(data)
+        this.artworks.unshift(artwork)
+        return { success: true, artwork }
+      } catch (e: any) {
+        this.error = e?.data?.message || e?.message || 'Failed to create artwork'
+        console.error('Failed to create artwork:', e)
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
       }
+    },
+
+    async updateArtwork(id: string, data: UpdateArtworkData) {
+      this.loading = true
+      this.error = null
+      try {
+        const artworkService = useArtworkService()
+        const artwork = await artworkService.updateArtwork(id, data)
+        const index = this.artworks.findIndex((a) => a.id === id)
+        if (index > -1) {
+          this.artworks[index] = artwork
+        }
+        if (this.currentArtwork?.id === id) {
+          this.currentArtwork = artwork
+        }
+        return { success: true, artwork }
+      } catch (e: any) {
+        this.error = e?.data?.message || e?.message || 'Failed to update artwork'
+        console.error('Failed to update artwork:', e)
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteArtwork(id: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const artworkService = useArtworkService()
+        await artworkService.deleteArtwork(id)
+        const index = this.artworks.findIndex((a) => a.id === id)
+        if (index > -1) {
+          this.artworks.splice(index, 1)
+        }
+        if (this.currentArtwork?.id === id) {
+          this.currentArtwork = null
+        }
+        return { success: true }
+      } catch (e: any) {
+        this.error = e?.data?.message || e?.message || 'Failed to delete artwork'
+        console.error('Failed to delete artwork:', e)
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async publishArtwork(id: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const artworkService = useArtworkService()
+        const artwork = await artworkService.publishArtwork(id)
+        const index = this.artworks.findIndex((a) => a.id === id)
+        if (index > -1) {
+          this.artworks[index] = artwork
+        }
+        if (this.currentArtwork?.id === id) {
+          this.currentArtwork = artwork
+        }
+        return { success: true, artwork }
+      } catch (e: any) {
+        this.error = e?.data?.message || e?.message || 'Failed to publish artwork'
+        console.error('Failed to publish artwork:', e)
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateArtworkStatus(id: string, status: ArtworkStatus) {
+      this.loading = true
+      this.error = null
+      try {
+        const artworkService = useArtworkService()
+        const artwork = await artworkService.updateArtworkStatus(id, status)
+        const index = this.artworks.findIndex((a) => a.id === id)
+        if (index > -1) {
+          this.artworks[index] = artwork
+        }
+        if (this.currentArtwork?.id === id) {
+          this.currentArtwork = artwork
+        }
+        return { success: true, artwork }
+      } catch (e: any) {
+        this.error = e?.data?.message || e?.message || 'Failed to update artwork status'
+        console.error('Failed to update artwork status:', e)
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Image management
+    async addArtworkImage(artworkId: string, data: CreateArtworkImageData) {
+      try {
+        const artworkService = useArtworkService()
+        const image = await artworkService.addArtworkImage(artworkId, data)
+        // Update current artwork if it matches
+        if (this.currentArtwork?.id === artworkId) {
+          this.currentArtwork.images.push(image)
+        }
+        return { success: true, image }
+      } catch (e: any) {
+        console.error('Failed to add artwork image:', e)
+        return { success: false, error: e?.data?.message || e?.message || 'Failed to add image' }
+      }
+    },
+
+    async removeArtworkImage(artworkId: string, imageId: string) {
+      try {
+        const artworkService = useArtworkService()
+        await artworkService.removeArtworkImage(artworkId, imageId)
+        // Update current artwork if it matches
+        if (this.currentArtwork?.id === artworkId) {
+          this.currentArtwork.images = this.currentArtwork.images.filter((img) => img.id !== imageId)
+        }
+        return { success: true }
+      } catch (e: any) {
+        console.error('Failed to remove artwork image:', e)
+        return { success: false, error: e?.data?.message || e?.message || 'Failed to remove image' }
+      }
+    },
+
+    async setPrimaryImage(artworkId: string, imageId: string) {
+      try {
+        const artworkService = useArtworkService()
+        await artworkService.setPrimaryImage(artworkId, imageId)
+        // Update current artwork if it matches
+        if (this.currentArtwork?.id === artworkId) {
+          this.currentArtwork.images = this.currentArtwork.images.map((img) => ({
+            ...img,
+            isPrimary: img.id === imageId,
+          }))
+        }
+        return { success: true }
+      } catch (e: any) {
+        console.error('Failed to set primary image:', e)
+        return { success: false, error: e?.data?.message || e?.message || 'Failed to set primary image' }
+      }
+    },
+
+    // Admin actions
+    async setArtworkFeatured(id: string, featured: boolean) {
+      try {
+        const artworkService = useArtworkService()
+        const artwork = await artworkService.setArtworkFeatured(id, featured)
+        const index = this.artworks.findIndex((a) => a.id === id)
+        if (index > -1) {
+          this.artworks[index] = artwork
+        }
+        if (this.currentArtwork?.id === id) {
+          this.currentArtwork = artwork
+        }
+        return { success: true, artwork }
+      } catch (e: any) {
+        console.error('Failed to set featured status:', e)
+        return { success: false, error: e?.data?.message || e?.message || 'Failed to set featured status' }
+      }
+    },
+
+    async adminUpdateStatus(id: string, status: ArtworkStatus) {
+      try {
+        const artworkService = useArtworkService()
+        const artwork = await artworkService.adminUpdateStatus(id, status)
+        const index = this.artworks.findIndex((a) => a.id === id)
+        if (index > -1) {
+          this.artworks[index] = artwork
+        }
+        if (this.currentArtwork?.id === id) {
+          this.currentArtwork = artwork
+        }
+        return { success: true, artwork }
+      } catch (e: any) {
+        console.error('Failed to update status:', e)
+        return { success: false, error: e?.data?.message || e?.message || 'Failed to update status' }
+      }
+    },
+
+    // Utility actions
+    clearCurrentArtwork() {
+      this.currentArtwork = null
+      this.currentArtworkStats = null
+    },
+
+    clearError() {
+      this.error = null
     },
   },
 })

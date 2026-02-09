@@ -8,9 +8,15 @@ const footerLinks = {
     { name: 'Exhibitions', href: '/exhibitions' },
     { name: 'Collections', href: '/collections' },
   ],
+  crafts: [
+    { name: 'Paintings', href: '/artworks?category=paintings' },
+    { name: 'Sculptures', href: '/artworks?category=sculptures' },
+    { name: 'Textiles', href: '/artworks?category=textiles' },
+    { name: 'Beadwork', href: '/artworks?category=beadwork' },
+  ],
   company: [
     { name: 'About Us', href: '/about' },
-    { name: 'Careers', href: '/careers' },
+    { name: 'Our Story', href: '/story' },
     { name: 'Press', href: '/press' },
     { name: 'Contact', href: '/contact' },
   ],
@@ -31,30 +37,39 @@ const socialLinks = [
 </script>
 
 <template>
-  <footer class="bg-gray-900 text-gray-300">
+  <footer class="bg-gradient-to-b from-bark-900 to-bark-950 text-earth-300">
+    <!-- Decorative top border -->
+    <div class="h-1 bg-gradient-sunset"></div>
+
     <!-- Main Footer -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-12">
         <!-- Brand -->
         <div class="lg:col-span-2">
-          <NuxtLink to="/" class="flex items-center gap-2 mb-4">
-            <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-              <span class="text-gray-900 font-bold text-xl">A</span>
+          <NuxtLink to="/" class="flex items-center gap-3 mb-5">
+            <div class="w-12 h-12 bg-gradient-sunset rounded-xl flex items-center justify-center shadow-warm">
+              <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
             </div>
-            <span class="text-xl font-semibold text-white">ArtGallery</span>
+            <div>
+              <span class="text-xl font-display font-bold text-white">Afrika</span>
+              <span class="text-xl font-display text-primary-400">Crafts</span>
+              <span class="block text-xs text-earth-500 -mt-0.5">Gallery</span>
+            </div>
           </NuxtLink>
-          <p class="text-gray-400 text-sm leading-relaxed max-w-sm mb-6">
-            Discover and collect extraordinary artworks from talented artists around the world. Your journey into the world of art starts here.
+          <p class="text-earth-400 text-sm leading-relaxed max-w-sm mb-6">
+            Celebrating the rich heritage and contemporary vision of African artistry. Discover unique handcrafted pieces from talented artists across the continent.
           </p>
           <!-- Social Links -->
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
             <a
               v-for="social in socialLinks"
               :key="social.name"
               :href="social.href"
               target="_blank"
               rel="noopener noreferrer"
-              class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+              class="w-10 h-10 bg-earth-800/50 rounded-xl flex items-center justify-center text-earth-400 hover:bg-primary-500/20 hover:text-primary-400 transition-all duration-300"
               :aria-label="social.name"
             >
               <!-- Instagram -->
@@ -79,14 +94,35 @@ const socialLinks = [
 
         <!-- Explore Links -->
         <div>
-          <h3 class="text-white font-semibold mb-4">Explore</h3>
+          <h3 class="text-white font-display font-semibold mb-4 text-lg">Explore</h3>
           <ul class="space-y-3">
             <li v-for="link in footerLinks.explore" :key="link.name">
               <NuxtLink
                 :to="link.href"
-                class="text-sm text-gray-400 hover:text-white transition-colors"
+                class="text-sm text-earth-400 hover:text-primary-400 transition-colors inline-flex items-center gap-1 group"
               >
                 {{ link.name }}
+                <svg class="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </NuxtLink>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Crafts Links -->
+        <div>
+          <h3 class="text-white font-display font-semibold mb-4 text-lg">Crafts</h3>
+          <ul class="space-y-3">
+            <li v-for="link in footerLinks.crafts" :key="link.name">
+              <NuxtLink
+                :to="link.href"
+                class="text-sm text-earth-400 hover:text-primary-400 transition-colors inline-flex items-center gap-1 group"
+              >
+                {{ link.name }}
+                <svg class="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
               </NuxtLink>
             </li>
           </ul>
@@ -94,14 +130,17 @@ const socialLinks = [
 
         <!-- Company Links -->
         <div>
-          <h3 class="text-white font-semibold mb-4">Company</h3>
+          <h3 class="text-white font-display font-semibold mb-4 text-lg">Company</h3>
           <ul class="space-y-3">
             <li v-for="link in footerLinks.company" :key="link.name">
               <NuxtLink
                 :to="link.href"
-                class="text-sm text-gray-400 hover:text-white transition-colors"
+                class="text-sm text-earth-400 hover:text-primary-400 transition-colors inline-flex items-center gap-1 group"
               >
                 {{ link.name }}
+                <svg class="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
               </NuxtLink>
             </li>
           </ul>
@@ -109,36 +148,78 @@ const socialLinks = [
 
         <!-- Support Links -->
         <div>
-          <h3 class="text-white font-semibold mb-4">Support</h3>
+          <h3 class="text-white font-display font-semibold mb-4 text-lg">Support</h3>
           <ul class="space-y-3">
             <li v-for="link in footerLinks.support" :key="link.name">
               <NuxtLink
                 :to="link.href"
-                class="text-sm text-gray-400 hover:text-white transition-colors"
+                class="text-sm text-earth-400 hover:text-primary-400 transition-colors inline-flex items-center gap-1 group"
               >
                 {{ link.name }}
+                <svg class="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
               </NuxtLink>
             </li>
           </ul>
         </div>
       </div>
+
+      <!-- Decorative African Pattern Divider -->
+      <div class="my-10 flex items-center gap-4">
+        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-earth-700 to-transparent"></div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 bg-primary-500 rounded-full"></span>
+          <span class="w-3 h-3 bg-secondary-500 rotate-45"></span>
+          <span class="w-2 h-2 bg-primary-500 rounded-full"></span>
+        </div>
+        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-earth-700 to-transparent"></div>
+      </div>
+
+      <!-- Trust Badges -->
+      <div class="flex flex-wrap items-center justify-center gap-8 mb-10">
+        <div class="flex items-center gap-2 text-earth-500">
+          <svg class="w-5 h-5 text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          <span class="text-sm">Secure Payments</span>
+        </div>
+        <div class="flex items-center gap-2 text-earth-500">
+          <svg class="w-5 h-5 text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-sm">Worldwide Shipping</span>
+        </div>
+        <div class="flex items-center gap-2 text-earth-500">
+          <svg class="w-5 h-5 text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-sm">24/7 Support</span>
+        </div>
+        <div class="flex items-center gap-2 text-earth-500">
+          <svg class="w-5 h-5 text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+          <span class="text-sm">Authenticity Guaranteed</span>
+        </div>
+      </div>
     </div>
 
     <!-- Bottom Bar -->
-    <div class="border-t border-gray-800">
+    <div class="border-t border-earth-800/50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p class="text-sm text-gray-500">
-            &copy; {{ currentYear }} ArtGallery. All rights reserved.
+          <p class="text-sm text-earth-500">
+            &copy; {{ currentYear }} AfrikaCrafts Gallery. Celebrating African artistry.
           </p>
           <div class="flex items-center gap-6">
-            <NuxtLink to="/terms" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+            <NuxtLink to="/terms" class="text-sm text-earth-500 hover:text-primary-400 transition-colors">
               Terms
             </NuxtLink>
-            <NuxtLink to="/privacy" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+            <NuxtLink to="/privacy" class="text-sm text-earth-500 hover:text-primary-400 transition-colors">
               Privacy
             </NuxtLink>
-            <NuxtLink to="/cookies" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+            <NuxtLink to="/cookies" class="text-sm text-earth-500 hover:text-primary-400 transition-colors">
               Cookies
             </NuxtLink>
           </div>

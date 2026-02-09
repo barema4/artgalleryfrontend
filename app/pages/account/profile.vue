@@ -3,6 +3,7 @@ import { useAuthStore } from '~/stores/auth'
 import type { UpdateProfileData } from '~/types/user'
 
 definePageMeta({
+  layout: 'dashboard',
   middleware: ['auth'],
 })
 

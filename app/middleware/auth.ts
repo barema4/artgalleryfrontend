@@ -1,6 +1,6 @@
 import { useAuthStore } from '~/stores/auth'
 
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(async (to) => {
   // Skip on server - auth is client-side only
   if (import.meta.server) return
 
@@ -12,5 +12,16 @@ export default defineNuxtRouteMiddleware((to) => {
       path: '/auth/login',
       query: { redirect: to.fullPath },
     })
+  }
+
+  // Ensure user data is loaded
+  if (!authStore.user) {
+    const success = await authStore.fetchCurrentUser()
+    if (!success) {
+      return navigateTo({
+        path: '/auth/login',
+        query: { redirect: to.fullPath },
+      })
+    }
   }
 })

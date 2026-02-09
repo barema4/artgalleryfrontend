@@ -68,6 +68,10 @@ export const useAuthStore = defineStore('auth', {
         })
 
         this.handleAuthResponse(response)
+
+        // Fetch full user data (login response doesn't include all fields like emailVerified)
+        await this.fetchCurrentUser()
+
         return { success: true }
       } catch (error: any) {
         this.error = error?.data?.message || 'Login failed. Please try again.'
@@ -89,6 +93,10 @@ export const useAuthStore = defineStore('auth', {
         })
 
         this.handleAuthResponse(response)
+
+        // Fetch full user data
+        await this.fetchCurrentUser()
+
         return { success: true }
       } catch (error: any) {
         this.error = error?.data?.message || 'Registration failed. Please try again.'

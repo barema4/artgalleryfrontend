@@ -3,6 +3,7 @@ import { useAuthStore } from '~/stores/auth'
 import type { UpdatePreferencesData, NewsletterFrequency } from '~/types/user'
 
 definePageMeta({
+  layout: 'dashboard',
   middleware: ['auth'],
 })
 
