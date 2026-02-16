@@ -17,7 +17,6 @@ const error = ref('')
 const isFollowing = ref(false)
 const isFollowLoading = ref(false)
 
-// Guest follow modal
 const showGuestFollowModal = ref(false)
 const guestEmail = ref('')
 const guestFollowError = ref('')
@@ -30,11 +29,9 @@ async function fetchArtist() {
   try {
     artist.value = await artistService.getArtistBySlug(slug.value)
 
-    // Fetch stats
     if (artist.value) {
       stats.value = await artistService.getArtistStats(artist.value.id)
 
-      // Check if following (authenticated users only)
       if (authStore.isAuthenticated) {
         const result = await artistService.isFollowingArtist(artist.value.id)
         isFollowing.value = result.isFollowing
@@ -105,12 +102,10 @@ watch(slug, () => {
 
 <template>
   <div class="min-h-screen">
-    <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-24">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
     </div>
 
-    <!-- Error -->
     <div v-else-if="error" class="max-w-2xl mx-auto py-24 px-4 text-center">
       <h1 class="text-2xl font-bold text-gray-900 mb-2">Artist not found</h1>
       <p class="text-gray-600 mb-6">{{ error }}</p>
@@ -119,9 +114,7 @@ watch(slug, () => {
       </NuxtLink>
     </div>
 
-    <!-- Artist Profile -->
     <template v-else-if="artist">
-      <!-- Cover Image -->
       <div class="h-64 md:h-80 bg-gray-200 relative">
         <img
           v-if="artist.coverImage"
@@ -132,11 +125,9 @@ watch(slug, () => {
         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
       </div>
 
-      <!-- Profile Section -->
       <div class="max-w-6xl mx-auto px-4 -mt-20 relative z-10">
         <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
           <div class="flex flex-col md:flex-row gap-6">
-            <!-- Profile Image -->
             <div class="flex-shrink-0">
               <div class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-200 -mt-20 md:-mt-24">
                 <img
@@ -147,13 +138,12 @@ watch(slug, () => {
                 />
                 <div v-else class="w-full h-full flex items-center justify-center">
                   <span class="text-4xl font-bold text-gray-400">
-                    {{ artist.displayName[0].toUpperCase() }}
+                    {{ artist.displayName?.[0]?.toUpperCase() || 'A' }}
                   </span>
                 </div>
               </div>
             </div>
 
-            <!-- Info -->
             <div class="flex-1">
               <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -172,7 +162,6 @@ watch(slug, () => {
                     </span>
                   </div>
 
-                  <!-- Stats -->
                   <div class="flex items-center gap-6 mt-3 text-sm">
                     <span>
                       <span class="font-semibold text-gray-900">{{ stats?.artworkCount || 0 }}</span>
@@ -189,7 +178,6 @@ watch(slug, () => {
                   </div>
                 </div>
 
-                <!-- Follow Button -->
                 <button
                   class="px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
                   :class="isFollowing
@@ -202,18 +190,15 @@ watch(slug, () => {
                 </button>
               </div>
 
-              <!-- Bio -->
               <p v-if="artist.bio" class="mt-4 text-gray-600">
                 {{ artist.bio }}
               </p>
 
-              <!-- Statement -->
               <div v-if="artist.statement" class="mt-4 p-4 bg-gray-50 rounded-lg">
                 <h3 class="text-sm font-semibold text-gray-900 mb-2">Artist Statement</h3>
                 <p class="text-gray-600 text-sm">{{ artist.statement }}</p>
               </div>
 
-              <!-- Social Links -->
               <div class="flex items-center gap-4 mt-4">
                 <a
                   v-if="artist.website"
@@ -264,7 +249,6 @@ watch(slug, () => {
           </div>
         </div>
 
-        <!-- Artworks Section (placeholder) -->
         <div class="mt-8">
           <h2 class="text-xl font-bold text-gray-900 mb-4">Artworks</h2>
           <div class="bg-gray-100 rounded-xl p-12 text-center">
@@ -274,7 +258,6 @@ watch(slug, () => {
       </div>
     </template>
 
-    <!-- Guest Follow Modal -->
     <div
       v-if="showGuestFollowModal"
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"

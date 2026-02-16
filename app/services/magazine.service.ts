@@ -27,7 +27,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -73,7 +72,6 @@ function buildArticleQueryString(params?: ArticleListParams): string {
 
 export function useMagazineService() {
   return {
-    // Public edition endpoints
     getEditions: async (params?: MagazineEditionListParams): Promise<MagazineEditionListResponse> => {
       return $fetch<MagazineEditionListResponse>(`${API_BASE}/magazine/editions${buildEditionQueryString(params)}`)
     },
@@ -82,7 +80,6 @@ export function useMagazineService() {
       return $fetch<MagazineEdition>(`${API_BASE}/magazine/editions/${slug}`)
     },
 
-    // Public article endpoints
     getArticles: async (params?: ArticleListParams): Promise<ArticleListResponse> => {
       return $fetch<ArticleListResponse>(`${API_BASE}/magazine/articles${buildArticleQueryString(params)}`)
     },
@@ -91,7 +88,6 @@ export function useMagazineService() {
       return $fetch<Article>(`${API_BASE}/magazine/articles/${slug}`)
     },
 
-    // Public category endpoints
     getCategories: async (): Promise<ArticleCategory[]> => {
       return $fetch<ArticleCategory[]>(`${API_BASE}/magazine/categories`)
     },
@@ -100,7 +96,6 @@ export function useMagazineService() {
       return $fetch<ArticleCategory>(`${API_BASE}/magazine/categories/${slug}`)
     },
 
-    // Admin edition endpoints
     adminGetEditions: async (params?: MagazineEditionListParams): Promise<MagazineEditionListResponse> => {
       return $fetch<MagazineEditionListResponse>(`${API_BASE}/magazine/admin/editions${buildEditionQueryString(params)}`, {
         headers: getHeaders(),
@@ -143,7 +138,6 @@ export function useMagazineService() {
       })
     },
 
-    // Admin category endpoints
     createCategory: async (data: CreateArticleCategoryData): Promise<ArticleCategory> => {
       return $fetch<ArticleCategory>(`${API_BASE}/magazine/admin/categories`, {
         method: 'POST',
@@ -167,7 +161,6 @@ export function useMagazineService() {
       })
     },
 
-    // Admin article endpoints
     adminGetArticles: async (params?: ArticleListParams): Promise<ArticleListResponse> => {
       return $fetch<ArticleListResponse>(`${API_BASE}/magazine/admin/articles${buildArticleQueryString(params)}`, {
         headers: getHeaders(),

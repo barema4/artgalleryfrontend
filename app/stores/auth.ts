@@ -39,7 +39,6 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    // Clear all auth state
     clearAuth() {
       this.accessToken = null
       this.refreshToken = null
@@ -49,14 +48,12 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
     },
 
-    // Handle auth response
     handleAuthResponse(response: AuthResponse) {
       this.accessToken = response.accessToken
       this.refreshToken = response.refreshToken
       this.user = response.user
     },
 
-    // Login
     async login(credentials: LoginCredentials) {
       this.loading = true
       this.error = null
@@ -69,7 +66,6 @@ export const useAuthStore = defineStore('auth', {
 
         this.handleAuthResponse(response)
 
-        // Fetch full user data (login response doesn't include all fields like emailVerified)
         await this.fetchCurrentUser()
 
         return { success: true }
@@ -81,7 +77,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Register
     async register(data: RegisterData) {
       this.loading = true
       this.error = null
@@ -94,7 +89,6 @@ export const useAuthStore = defineStore('auth', {
 
         this.handleAuthResponse(response)
 
-        // Fetch full user data
         await this.fetchCurrentUser()
 
         return { success: true }
@@ -106,7 +100,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Logout
     async logout() {
       try {
         if (this.accessToken) {
@@ -122,7 +115,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Refresh access token
     async refreshAccessToken(): Promise<boolean> {
       if (!this.refreshToken) return false
 
@@ -140,7 +132,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Fetch current user - called to validate token on app init
     async fetchCurrentUser(): Promise<boolean> {
       if (!this.accessToken) return false
 
@@ -154,13 +145,10 @@ export const useAuthStore = defineStore('auth', {
         this.user = user
         return true
       } catch (error: any) {
-        // Check if it's a 401 error - token might be expired
         const status = error?.response?.status || error?.status || error?.statusCode
         if (status === 401) {
-          // Try to refresh token
           const refreshed = await this.refreshAccessToken()
           if (refreshed) {
-            // Retry fetching user
             try {
               const user = await $fetch<User>(`${API_BASE}/users/me`, {
                 headers: {
@@ -180,7 +168,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Forgot password
     async forgotPassword(email: string) {
       this.loading = true
       this.error = null
@@ -200,7 +187,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Reset password
     async resetPassword(token: string, password: string) {
       this.loading = true
       this.error = null
@@ -220,7 +206,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Verify email
     async verifyEmail(token: string) {
       this.loading = true
       this.error = null
@@ -244,7 +229,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Fetch user profile
     async fetchProfile() {
       if (!this.accessToken) return
 
@@ -263,7 +247,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Update user profile
     async updateProfile(data: UpdateProfileData) {
       if (!this.accessToken) return { success: false, error: 'Not authenticated' }
 
@@ -292,7 +275,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Fetch user preferences
     async fetchPreferences() {
       if (!this.accessToken) return
 
@@ -311,7 +293,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Update user preferences
     async updatePreferences(data: UpdatePreferencesData) {
       if (!this.accessToken) return { success: false, error: 'Not authenticated' }
 

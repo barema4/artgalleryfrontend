@@ -20,7 +20,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -49,7 +48,6 @@ function buildQueryString(params?: CommentListParams): string {
 
 export function useCommentService() {
   return {
-    // Public endpoints - Get comments by resource type
     getArtworkComments: async (artworkId: string, params?: CommentListParams): Promise<CommentListResponse> => {
       return $fetch<CommentListResponse>(`${API_BASE}/artworks/${artworkId}/comments${buildQueryString(params)}`)
     },
@@ -74,7 +72,6 @@ export function useCommentService() {
       return $fetch<Comment>(`${API_BASE}/comments/${id}`)
     },
 
-    // Authenticated endpoints
     createComment: async (data: CreateCommentData): Promise<Comment> => {
       return $fetch<Comment>(`${API_BASE}/comments`, {
         method: 'POST',
@@ -98,7 +95,6 @@ export function useCommentService() {
       })
     },
 
-    // Admin endpoints
     getPendingComments: async (params?: CommentListParams): Promise<CommentListResponse> => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))

@@ -1,5 +1,3 @@
-// Newsletter Types
-
 export type NewsletterStatus = 'DRAFT' | 'SCHEDULED' | 'SENT'
 
 export type SubscriberStatus = 'ACTIVE' | 'UNSUBSCRIBED' | 'BOUNCED'
@@ -58,8 +56,6 @@ export interface NewsletterStats {
   averageOpenRate: number
   averageClickRate: number
 }
-
-// Subscriber Types
 
 export interface Subscriber {
   id: string

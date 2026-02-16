@@ -20,7 +20,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -38,7 +37,6 @@ function getHeaders(): Record<string, string> {
 
 export function useCategoryService() {
   return {
-    // Public endpoints
     getCategories: async (params?: CategoryListParams): Promise<CategoryListResponse> => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
@@ -58,7 +56,6 @@ export function useCategoryService() {
       return $fetch<Category>(`${API_BASE}/categories/${slug}`)
     },
 
-    // Admin endpoints
     createCategory: async (data: CreateCategoryData): Promise<Category> => {
       return $fetch<Category>(`${API_BASE}/categories`, {
         method: 'POST',

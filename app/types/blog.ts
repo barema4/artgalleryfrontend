@@ -1,5 +1,3 @@
-// Blog Types
-
 export type BlogPostStatus = 'DRAFT' | 'PUBLISHED' | 'SCHEDULED' | 'ARCHIVED'
 
 export interface BlogTag {

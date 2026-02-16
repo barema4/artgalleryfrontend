@@ -18,7 +18,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -36,7 +35,6 @@ function getHeaders(): Record<string, string> {
 
 export function useMediaService() {
   return {
-    // Upload endpoints
     uploadFile: async (file: File, folder?: string, alt?: string): Promise<MediaFile> => {
       const formData = new FormData()
       formData.append('file', file)
@@ -64,7 +62,6 @@ export function useMediaService() {
       })
     },
 
-    // Retrieval endpoints
     getMediaFiles: async (params?: MediaListParams): Promise<MediaListResponse> => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
@@ -90,7 +87,6 @@ export function useMediaService() {
       })
     },
 
-    // Delete endpoints
     deleteMedia: async (id: string): Promise<void> => {
       return $fetch<void>(`${API_BASE}/media/${id}`, {
         method: 'DELETE',

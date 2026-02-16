@@ -27,7 +27,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -69,7 +68,6 @@ function buildSubscriberQueryString(params?: SubscriberListParams): string {
 
 export function useNewsletterService() {
   return {
-    // Public subscriber endpoints
     subscribe: async (data: SubscribeData): Promise<Subscriber> => {
       return $fetch<Subscriber>(`${API_BASE}/newsletter/subscribe`, {
         method: 'POST',
@@ -88,7 +86,6 @@ export function useNewsletterService() {
       })
     },
 
-    // Tracking endpoints (typically called via email pixels/links)
     trackOpen: async (id: string): Promise<void> => {
       return $fetch<void>(`${API_BASE}/newsletter/track/open/${id}`)
     },
@@ -97,7 +94,6 @@ export function useNewsletterService() {
       return $fetch<void>(`${API_BASE}/newsletter/track/click/${id}`)
     },
 
-    // Admin newsletter endpoints
     getNewsletters: async (params?: NewsletterListParams): Promise<NewsletterListResponse> => {
       return $fetch<NewsletterListResponse>(`${API_BASE}/newsletter/admin/campaigns${buildNewsletterQueryString(params)}`, {
         headers: getHeaders(),
@@ -161,7 +157,6 @@ export function useNewsletterService() {
       })
     },
 
-    // Admin subscriber endpoints
     getSubscribers: async (params?: SubscriberListParams): Promise<SubscriberListResponse> => {
       return $fetch<SubscriberListResponse>(`${API_BASE}/newsletter/admin/subscribers${buildSubscriberQueryString(params)}`, {
         headers: getHeaders(),

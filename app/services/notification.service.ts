@@ -21,7 +21,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -39,7 +38,6 @@ function getHeaders(): Record<string, string> {
 
 export function useNotificationService() {
   return {
-    // User endpoints
     getNotifications: async (params?: NotificationListParams): Promise<NotificationListResponse> => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
@@ -108,7 +106,6 @@ export function useNotificationService() {
       })
     },
 
-    // Admin endpoints
     createNotification: async (data: CreateNotificationData): Promise<Notification> => {
       return $fetch<Notification>(`${API_BASE}/notifications`, {
         method: 'POST',

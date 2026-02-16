@@ -11,6 +11,7 @@ export interface Artist {
   instagram?: string
   twitter?: string
   facebook?: string
+  location?: string
   verified: boolean
   featured: boolean
   viewCount: number
@@ -34,6 +35,9 @@ export interface ArtistStats {
   followerCount: number
   artworkCount: number
   exhibitionCount: number
+  totalSales?: number
+  totalRevenue?: number
+  averagePrice?: number
 }
 
 export interface CreateArtistData {

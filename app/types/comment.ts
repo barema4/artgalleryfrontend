@@ -1,5 +1,3 @@
-// Comment Types
-
 export type CommentStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 
 export type CommentTargetType = 'artwork' | 'exhibition' | 'article' | 'blogPost'

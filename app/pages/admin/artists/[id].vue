@@ -20,7 +20,6 @@ const isLoading = ref(true)
 const error = ref('')
 const successMessage = ref('')
 
-// Pagination for followers
 const followersPagination = reactive({
   page: 1,
   limit: 10,
@@ -35,15 +34,11 @@ async function fetchArtist() {
   error.value = ''
 
   try {
-    // Fetch artist by ID - we need to get all artists and find by ID
-    // or use slug if available. For now, let's fetch the artist directly
     const response = await artistService.getArtists({ limit: 100 })
     artist.value = response.data.find(a => a.id === artistId.value) || null
 
     if (artist.value) {
-      // Fetch stats
       stats.value = await artistService.getArtistStats(artist.value.id)
-      // Fetch followers
       await fetchFollowers()
     }
   } catch (e: any) {
@@ -136,7 +131,6 @@ onMounted(() => {
 <template>
   <div class="min-h-[80vh] py-8 px-4">
     <div class="max-w-5xl mx-auto">
-      <!-- Back Button -->
       <button
         class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
         @click="goBack"
@@ -147,7 +141,6 @@ onMounted(() => {
         Back to Artists
       </button>
 
-      <!-- Messages -->
       <UiAlert v-if="successMessage" type="success" class="mb-6" dismissible @dismiss="successMessage = ''">
         {{ successMessage }}
       </UiAlert>
@@ -155,16 +148,12 @@ onMounted(() => {
         {{ error }}
       </UiAlert>
 
-      <!-- Loading -->
       <div v-if="isLoading" class="flex justify-center py-12">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
 
-      <!-- Artist Details -->
       <template v-else-if="artist">
-        <!-- Header Card -->
         <div class="bg-white border border-gray-200 rounded-xl overflow-hidden mb-6">
-          <!-- Cover Image -->
           <div class="h-32 bg-gradient-to-r from-primary-500 to-secondary-500">
             <img
               v-if="artist.coverImage"
@@ -177,7 +166,6 @@ onMounted(() => {
           <div class="p-6 -mt-12">
             <div class="flex items-end justify-between">
               <div class="flex items-end gap-4">
-                <!-- Profile Image -->
                 <div class="w-24 h-24 bg-white rounded-full border-4 border-white shadow-lg overflow-hidden">
                   <img
                     v-if="artist.profileImage"
@@ -187,12 +175,11 @@ onMounted(() => {
                   />
                   <div v-else class="w-full h-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
                     <span class="text-2xl font-bold text-white">
-                      {{ artist.displayName[0].toUpperCase() }}
+                      {{ artist.displayName?.[0]?.toUpperCase() || 'A' }}
                     </span>
                   </div>
                 </div>
 
-                <!-- Basic Info -->
                 <div class="mb-2">
                   <div class="flex items-center gap-2">
                     <h1 class="text-2xl font-bold text-gray-900">{{ artist.displayName }}</h1>
@@ -216,7 +203,6 @@ onMounted(() => {
                 </div>
               </div>
 
-              <!-- Actions -->
               <div class="flex items-center gap-2">
                 <button
                   class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors disabled:opacity-50"
@@ -249,9 +235,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Stats & Details Grid -->
         <div class="grid md:grid-cols-3 gap-6 mb-6">
-          <!-- Stats Cards -->
           <div class="bg-white border border-gray-200 rounded-xl p-6">
             <div class="flex items-center gap-3">
               <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
@@ -296,9 +280,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Details Grid -->
         <div class="grid md:grid-cols-2 gap-6 mb-6">
-          <!-- Artist Information -->
           <div class="bg-white border border-gray-200 rounded-xl p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Artist Information</h2>
             <dl class="space-y-4">
@@ -325,7 +307,6 @@ onMounted(() => {
             </dl>
           </div>
 
-          <!-- Bio & Statement -->
           <div class="bg-white border border-gray-200 rounded-xl p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Bio & Statement</h2>
             <div class="space-y-4">
@@ -340,7 +321,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Social Links -->
           <div class="bg-white border border-gray-200 rounded-xl p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Social Links</h2>
             <dl class="space-y-4">
@@ -383,7 +363,6 @@ onMounted(() => {
             </dl>
           </div>
 
-          <!-- Sales Stats -->
           <div class="bg-white border border-gray-200 rounded-xl p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Sales & Performance</h2>
             <dl class="space-y-4">
@@ -407,7 +386,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Followers List -->
         <div class="bg-white border border-gray-200 rounded-xl p-6">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold text-gray-900">Followers</h2>
@@ -436,7 +414,6 @@ onMounted(() => {
               </span>
             </div>
 
-            <!-- Pagination -->
             <div v-if="followersPagination.totalPages > 1" class="flex items-center justify-between pt-4 border-t">
               <button
                 class="px-3 py-1 text-sm border border-gray-200 rounded-lg disabled:opacity-50"
@@ -464,7 +441,6 @@ onMounted(() => {
         </div>
       </template>
 
-      <!-- Not Found -->
       <div v-else class="text-center py-12">
         <h2 class="text-2xl font-bold text-gray-900">Artist not found</h2>
         <p class="text-gray-600 mt-2">The artist you're looking for doesn't exist or has been removed.</p>

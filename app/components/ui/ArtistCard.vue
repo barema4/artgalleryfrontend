@@ -2,6 +2,7 @@
 defineProps<{
   artist: {
     id: string
+    slug?: string
     name: string
     imageUrl: string
     artworksCount?: number
@@ -12,7 +13,7 @@ defineProps<{
 
 <template>
   <NuxtLink
-    :to="`/artists/${artist.id}`"
+    :to="`/artists/${artist.slug || artist.id}`"
     class="group flex-shrink-0 snap-start w-40 sm:w-48"
   >
     <div class="relative">

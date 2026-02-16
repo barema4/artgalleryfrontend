@@ -19,7 +19,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -37,7 +36,6 @@ function getHeaders(): Record<string, string> {
 
 export function useTagService() {
   return {
-    // Public endpoints
     getTags: async (params?: TagListParams): Promise<TagListResponse> => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
@@ -57,7 +55,6 @@ export function useTagService() {
       return $fetch<Tag>(`${API_BASE}/tags/${slug}`)
     },
 
-    // Admin endpoints
     createTag: async (data: CreateTagData): Promise<Tag> => {
       return $fetch<Tag>(`${API_BASE}/tags`, {
         method: 'POST',

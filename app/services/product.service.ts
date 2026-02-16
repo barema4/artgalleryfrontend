@@ -25,7 +25,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -43,7 +42,6 @@ function getHeaders(): Record<string, string> {
 
 export function useProductService() {
   return {
-    // Public endpoints
     getProducts: async (params?: ProductListParams): Promise<ProductListResponse> => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
@@ -65,7 +63,6 @@ export function useProductService() {
       return $fetch<Product>(`${API_BASE}/products/${slug}`)
     },
 
-    // Admin endpoints
     createProduct: async (data: CreateProductData): Promise<Product> => {
       return $fetch<Product>(`${API_BASE}/products`, {
         method: 'POST',
@@ -97,7 +94,6 @@ export function useProductService() {
       })
     },
 
-    // Variant management
     createVariant: async (productId: string, data: CreateProductVariantData): Promise<ProductVariant> => {
       return $fetch<ProductVariant>(`${API_BASE}/products/${productId}/variants`, {
         method: 'POST',
@@ -121,7 +117,6 @@ export function useProductService() {
       })
     },
 
-    // Image management
     addImage: async (productId: string, data: CreateProductImageData): Promise<ProductImage> => {
       return $fetch<ProductImage>(`${API_BASE}/products/${productId}/images`, {
         method: 'POST',

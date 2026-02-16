@@ -163,7 +163,7 @@ onMounted(() => {
                     />
                     <div v-else class="w-full h-full flex items-center justify-center">
                       <span class="text-sm font-medium text-gray-400">
-                        {{ artist.displayName[0].toUpperCase() }}
+                        {{ artist.displayName?.[0]?.toUpperCase() || 'A' }}
                       </span>
                     </div>
                   </div>

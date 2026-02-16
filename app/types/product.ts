@@ -1,5 +1,3 @@
-// Product Types
-
 export type ProductType = 'ORIGINAL' | 'PRINT' | 'MERCHANDISE' | 'DIGITAL'
 
 export interface ProductVariant {

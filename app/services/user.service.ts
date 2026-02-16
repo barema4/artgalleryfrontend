@@ -22,10 +22,8 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
-  // Fallback to store if localStorage fails
   const authStore = useAuthStore()
   return authStore.accessToken
 }
@@ -42,7 +40,6 @@ function getHeaders() {
 export function useUserService() {
 
   return {
-    // Current user endpoints
     getMe: async (): Promise<User> => {
       return $fetch<User>(`${API_BASE}/users/me`, {
         headers: getHeaders(),
@@ -77,7 +74,6 @@ export function useUserService() {
       })
     },
 
-    // Admin endpoints
     getUsers: async (params?: UserListParams): Promise<UserListResponse> => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))

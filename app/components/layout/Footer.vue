@@ -5,8 +5,8 @@ const footerLinks = {
   explore: [
     { name: 'Artworks', href: '/artworks' },
     { name: 'Artists', href: '/artists' },
-    { name: 'Exhibitions', href: '/exhibitions' },
-    { name: 'Collections', href: '/collections' },
+    { name: 'Shop', href: '/shop' },
+    { name: 'Events', href: '/events' },
   ],
   crafts: [
     { name: 'Paintings', href: '/artworks?category=paintings' },
@@ -16,7 +16,7 @@ const footerLinks = {
   ],
   company: [
     { name: 'About Us', href: '/about' },
-    { name: 'Our Story', href: '/story' },
+    { name: 'Blog', href: '/blog' },
     { name: 'Press', href: '/press' },
     { name: 'Contact', href: '/contact' },
   ],
@@ -162,6 +162,21 @@ const socialLinks = [
               </NuxtLink>
             </li>
           </ul>
+        </div>
+      </div>
+
+      <!-- Newsletter Section -->
+      <div class="mt-12 mb-10 bg-earth-800/30 rounded-2xl p-6 lg:p-8">
+        <div class="flex flex-col lg:flex-row items-center gap-6 lg:gap-12">
+          <div class="flex-1 text-center lg:text-left">
+            <h3 class="text-white font-display font-semibold text-xl mb-2">Stay Connected</h3>
+            <p class="text-earth-400 text-sm max-w-md">
+              Subscribe to our newsletter for exclusive updates on new artworks, artist features, and special offers.
+            </p>
+          </div>
+          <div class="w-full lg:w-auto lg:min-w-[400px]">
+            <UiNewsletterSubscribe variant="footer" />
+          </div>
         </div>
       </div>
 

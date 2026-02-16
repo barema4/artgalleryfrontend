@@ -1,5 +1,3 @@
-// Notification Types
-
 export type NotificationType =
   | 'ORDER_UPDATE'
   | 'NEW_EXHIBITION'

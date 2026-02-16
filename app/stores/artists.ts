@@ -35,7 +35,6 @@ export const useArtistsStore = defineStore('artists', {
   },
 
   actions: {
-    // Public endpoints
     async fetchArtists(params?: ArtistListParams) {
       this.loading = true
       this.error = null
@@ -84,7 +83,6 @@ export const useArtistsStore = defineStore('artists', {
       }
     },
 
-    // Current user's artist profile
     async fetchMyArtistProfile() {
       this.loading = true
       this.error = null
@@ -93,7 +91,6 @@ export const useArtistsStore = defineStore('artists', {
         this.myArtistProfile = await artistService.getMyArtistProfile()
         return this.myArtistProfile
       } catch (e: any) {
-        // 404 means user is not an artist yet, not an error
         if (e?.response?.status !== 404) {
           this.error = e?.data?.message || e?.message || 'Failed to fetch artist profile'
           console.error('Failed to fetch artist profile:', e)
@@ -154,12 +151,10 @@ export const useArtistsStore = defineStore('artists', {
       }
     },
 
-    // Follow/Unfollow
     async followArtist(id: string) {
       try {
         const artistService = useArtistService()
         await artistService.followArtist(id)
-        // Update follower count in state
         const artist = this.artists.find((a) => a.id === id)
         if (artist) {
           artist.followerCount++
@@ -178,7 +173,6 @@ export const useArtistsStore = defineStore('artists', {
       try {
         const artistService = useArtistService()
         await artistService.unfollowArtist(id)
-        // Update follower count in state
         const artist = this.artists.find((a) => a.id === id)
         if (artist && artist.followerCount > 0) {
           artist.followerCount--
@@ -215,7 +209,6 @@ export const useArtistsStore = defineStore('artists', {
       }
     },
 
-    // Admin actions
     async verifyArtist(id: string) {
       try {
         const artistService = useArtistService()
@@ -280,7 +273,6 @@ export const useArtistsStore = defineStore('artists', {
       }
     },
 
-    // Utility actions
     clearCurrentArtist() {
       this.currentArtist = null
       this.currentArtistStats = null

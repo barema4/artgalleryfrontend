@@ -1,12 +1,10 @@
 import { useAuthStore } from '~/stores/auth'
 
 export default defineNuxtRouteMiddleware(async (to) => {
-  // Skip on server - auth is client-side only
   if (import.meta.server) return
 
   const authStore = useAuthStore()
 
-  // Check if user is authenticated
   if (!authStore.isAuthenticated) {
     return navigateTo({
       path: '/auth/login',
@@ -14,12 +12,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
     })
   }
 
-  // Ensure user data is loaded before checking role
   if (!authStore.user) {
     await authStore.fetchCurrentUser()
   }
 
-  // Check if user is admin
   if (!authStore.isAdmin) {
     return navigateTo('/')
   }

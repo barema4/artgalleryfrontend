@@ -24,7 +24,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -69,7 +68,6 @@ function buildRegistrationQueryString(params?: RegistrationListParams): string {
 
 export function useEventService() {
   return {
-    // Public event endpoints
     getEvents: async (params?: EventListParams): Promise<EventListResponse> => {
       return $fetch<EventListResponse>(`${API_BASE}/events${buildEventQueryString(params)}`)
     },
@@ -92,7 +90,6 @@ export function useEventService() {
       return $fetch<Event>(`${API_BASE}/events/${id}`)
     },
 
-    // Public registration endpoints
     registerForEvent: async (eventId: string, data: RegisterForEventData): Promise<Registration> => {
       return $fetch<Registration>(`${API_BASE}/events/${eventId}/register`, {
         method: 'POST',
@@ -107,7 +104,6 @@ export function useEventService() {
       })
     },
 
-    // Authenticated user endpoints
     registerAsUser: async (eventId: string, data: RegisterForEventData): Promise<Registration> => {
       return $fetch<Registration>(`${API_BASE}/events/${eventId}/register/me`, {
         method: 'POST',
@@ -122,7 +118,6 @@ export function useEventService() {
       })
     },
 
-    // Admin event endpoints
     getEventStats: async (): Promise<EventStats> => {
       return $fetch<EventStats>(`${API_BASE}/events/admin/stats`, {
         headers: getHeaders(),
@@ -173,7 +168,6 @@ export function useEventService() {
       })
     },
 
-    // Admin registration endpoints
     getEventRegistrations: async (eventId: string, params?: RegistrationListParams): Promise<RegistrationListResponse> => {
       return $fetch<RegistrationListResponse>(`${API_BASE}/events/${eventId}/registrations${buildRegistrationQueryString(params)}`, {
         headers: getHeaders(),

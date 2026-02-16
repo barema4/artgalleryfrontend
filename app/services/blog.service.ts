@@ -20,7 +20,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -52,7 +51,6 @@ function buildQueryString(params?: BlogPostListParams): string {
 
 export function useBlogService() {
   return {
-    // Public endpoints
     getPosts: async (params?: BlogPostListParams): Promise<BlogPostListResponse> => {
       return $fetch<BlogPostListResponse>(`${API_BASE}/blog/posts${buildQueryString(params)}`)
     },
@@ -66,7 +64,6 @@ export function useBlogService() {
       return $fetch<PopularTag[]>(`${API_BASE}/blog/tags/popular${query}`)
     },
 
-    // Admin endpoints
     adminGetPosts: async (params?: BlogPostListParams): Promise<BlogPostListResponse> => {
       return $fetch<BlogPostListResponse>(`${API_BASE}/blog/admin/posts${buildQueryString(params)}`, {
         headers: getHeaders(),

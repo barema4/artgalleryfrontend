@@ -1,5 +1,3 @@
-// Category Types
-
 export interface Category {
   id: string
   name: string
@@ -51,8 +49,6 @@ export interface CategoryListResponse {
 export interface CategoryTreeResponse {
   data: Category[]
 }
-
-// Tag Types
 
 export interface Tag {
   id: string

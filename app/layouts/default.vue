@@ -22,5 +22,8 @@
         <LayoutFooter />
       </div>
     </div>
+
+    <!-- Cart Drawer (global) -->
+    <UiCartDrawer />
   </div>
 </template>

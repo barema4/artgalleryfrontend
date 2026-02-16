@@ -1,5 +1,3 @@
-// Event Types
-
 export type EventType = 'ARTIST_TALK' | 'LIVE_CREATION' | 'QA_SESSION' | 'AUCTION' | 'WORKSHOP'
 
 export type EventStatus = 'SCHEDULED' | 'LIVE' | 'ENDED' | 'CANCELLED'
@@ -92,8 +90,6 @@ export interface EventStats {
   totalRegistrations: number
   upcomingThisWeek: number
 }
-
-// Registration Types
 
 export interface RegisterForEventData {
   email: string

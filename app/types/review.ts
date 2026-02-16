@@ -1,5 +1,3 @@
-// Review Types
-
 export interface ReviewUser {
   id: string
   firstName?: string

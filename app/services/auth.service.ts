@@ -7,6 +7,7 @@ import type {
   ChangePasswordData,
   VerifyEmailData,
 } from '~/types/auth'
+import { useApi } from '~/services/api'
 
 export function useAuthService() {
   const api = useApi()

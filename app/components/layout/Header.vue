@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
+import { useCartStore } from '~/stores/cart'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const cartStore = useCartStore()
 
 const isMenuOpen = ref(false)
 const isUserMenuOpen = ref(false)
@@ -11,10 +13,11 @@ const isUserMenuOpen = ref(false)
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Artworks', href: '/artworks' },
+  { name: 'Shop', href: '/shop' },
   { name: 'Artists', href: '/artists' },
-  { name: 'Collections', href: '/collections' },
-  { name: 'Exhibitions', href: '/exhibitions' },
-  { name: 'About', href: '/about' },
+  { name: 'Magazine', href: '/magazine' },
+  { name: 'Events', href: '/events' },
+  { name: 'Blog', href: '/blog' },
 ]
 
 const isActive = (href: string) => {
@@ -52,7 +55,6 @@ async function handleLogout() {
   router.push('/')
 }
 
-// Close user menu when clicking outside
 function handleClickOutside(e: MouseEvent) {
   const target = e.target as HTMLElement
   if (!target.closest('.user-menu')) {
@@ -77,7 +79,6 @@ onUnmounted(() => {
   <header class="sticky top-0 z-50 bg-mudcloth-cream/95 backdrop-blur-md border-b border-earth-200/80">
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 lg:h-20">
-        <!-- Logo -->
         <NuxtLink to="/" class="flex items-center gap-3 flex-shrink-0" @click="closeMenu">
           <div class="w-11 h-11 bg-gradient-sunset rounded-xl flex items-center justify-center shadow-warm">
             <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -90,7 +91,6 @@ onUnmounted(() => {
           </div>
         </NuxtLink>
 
-        <!-- Desktop Navigation - Centered -->
         <div class="hidden lg:flex items-center justify-center flex-1 px-8">
           <div class="flex items-center bg-earth-100/50 rounded-full p-1.5">
             <NuxtLink
@@ -107,29 +107,33 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Desktop Actions -->
         <div class="hidden lg:flex items-center gap-3 flex-shrink-0">
-          <!-- Search Button -->
           <button class="p-2.5 text-bark-500 hover:text-primary-600 hover:bg-earth-100 rounded-xl transition-all duration-200">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
 
-          <!-- Logged In State -->
-          <template v-if="authStore.isAuthenticated">
-            <!-- Notifications -->
-            <button class="p-2.5 text-bark-500 hover:text-primary-600 hover:bg-earth-100 rounded-xl transition-all duration-200 relative">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full ring-2 ring-mudcloth-cream"></span>
-            </button>
+          <button
+            class="relative p-2.5 text-bark-500 hover:text-primary-600 hover:bg-earth-100 rounded-xl transition-all duration-200"
+            @click="cartStore.openCart()"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span
+              v-if="cartStore.itemCount > 0"
+              class="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center"
+            >
+              {{ cartStore.itemCount > 9 ? '9+' : cartStore.itemCount }}
+            </span>
+          </button>
 
-            <!-- Divider -->
+          <template v-if="authStore.isAuthenticated">
+            <UiNotificationBell />
+
             <div class="w-px h-8 bg-earth-200"></div>
 
-            <!-- User Menu -->
             <div class="relative user-menu">
               <button
                 class="flex items-center gap-2.5 py-1.5 pl-1.5 pr-3 rounded-full hover:bg-earth-100 transition-all duration-200"
@@ -146,7 +150,6 @@ onUnmounted(() => {
                 </svg>
               </button>
 
-              <!-- Dropdown Menu -->
               <Transition
                 enter-active-class="transition duration-150 ease-out"
                 enter-from-class="opacity-0 scale-95 -translate-y-1"
@@ -159,7 +162,6 @@ onUnmounted(() => {
                   v-if="isUserMenuOpen"
                   class="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-warm-lg border border-earth-100 py-2 overflow-hidden"
                 >
-                  <!-- User Info -->
                   <div class="px-4 py-4 bg-gradient-warm border-b border-earth-100">
                     <div class="flex items-center gap-3">
                       <div class="w-12 h-12 bg-gradient-sunset rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
@@ -174,7 +176,6 @@ onUnmounted(() => {
                     </div>
                   </div>
 
-                  <!-- Menu Items -->
                   <div class="py-2">
                     <button
                       class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-bark-700 hover:bg-earth-50 hover:text-primary-600 transition-colors"
@@ -245,7 +246,6 @@ onUnmounted(() => {
                     </button>
                   </div>
 
-                  <!-- Admin Section -->
                   <div v-if="authStore.isAdmin" class="border-t border-earth-100 py-2">
                     <p class="px-4 py-2 text-xs font-semibold text-secondary-600 uppercase tracking-wide">Admin</p>
                     <button
@@ -277,7 +277,6 @@ onUnmounted(() => {
                     </button>
                   </div>
 
-                  <!-- Logout -->
                   <div class="border-t border-earth-100 py-2">
                     <button
                       class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-kente-red hover:bg-red-50 transition-colors"
@@ -294,7 +293,6 @@ onUnmounted(() => {
             </div>
           </template>
 
-          <!-- Logged Out State -->
           <template v-else>
             <NuxtLink
               to="/auth/login"
@@ -311,12 +309,27 @@ onUnmounted(() => {
           </template>
         </div>
 
-        <!-- Mobile Menu Button -->
-        <button
-          class="lg:hidden p-2.5 text-bark-600 hover:text-primary-600 hover:bg-earth-100 rounded-xl transition-all"
-          @click="toggleMenu"
-          aria-label="Toggle menu"
-        >
+        <div class="flex items-center gap-2 lg:hidden">
+          <button
+            class="relative p-2.5 text-bark-600 hover:text-primary-600 hover:bg-earth-100 rounded-xl transition-all"
+            @click="cartStore.openCart()"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span
+              v-if="cartStore.itemCount > 0"
+              class="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center"
+            >
+              {{ cartStore.itemCount > 9 ? '9+' : cartStore.itemCount }}
+            </span>
+          </button>
+
+          <button
+            class="p-2.5 text-bark-600 hover:text-primary-600 hover:bg-earth-100 rounded-xl transition-all"
+            @click="toggleMenu"
+            aria-label="Toggle menu"
+          >
           <svg
             v-if="!isMenuOpen"
             xmlns="http://www.w3.org/2000/svg"
@@ -337,10 +350,10 @@ onUnmounted(() => {
           >
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-        </button>
+          </button>
+        </div>
       </div>
 
-      <!-- Mobile Navigation -->
       <Transition
         enter-active-class="transition duration-200 ease-out"
         enter-from-class="opacity-0 -translate-y-2"
@@ -350,7 +363,6 @@ onUnmounted(() => {
         leave-to-class="opacity-0 -translate-y-2"
       >
         <div v-if="isMenuOpen" class="lg:hidden py-4 border-t border-earth-200">
-          <!-- Navigation Links -->
           <div class="grid grid-cols-2 gap-2 mb-4">
             <NuxtLink
               v-for="item in navigation"
@@ -366,10 +378,8 @@ onUnmounted(() => {
             </NuxtLink>
           </div>
 
-          <!-- Mobile Auth Section -->
           <div class="pt-4 border-t border-earth-200">
             <template v-if="authStore.isAuthenticated">
-              <!-- User Info -->
               <div class="flex items-center gap-3 px-4 py-3 mb-3 bg-gradient-warm rounded-xl">
                 <div class="w-12 h-12 bg-gradient-sunset rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
                   <span class="text-lg font-semibold text-white">

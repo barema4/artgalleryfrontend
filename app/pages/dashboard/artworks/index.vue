@@ -40,10 +40,9 @@ async function fetchArtworks() {
   error.value = ''
 
   try {
-    // Fetch artworks for current artist
     const params = {
       ...filters,
-      artistId: authStore.user?.artistId,
+      artistId: authStore.user?.artistProfile?.id,
     }
     const response = await artworkService.getArtworks(params)
     artworks.value = response.data
@@ -142,7 +141,6 @@ onMounted(() => {
 <template>
   <div class="min-h-screen py-8 px-4">
     <div class="max-w-7xl mx-auto">
-      <!-- Header -->
       <div class="flex items-center justify-between mb-8">
         <div>
           <h1 class="text-3xl font-bold text-gray-900">My Artworks</h1>
@@ -159,7 +157,6 @@ onMounted(() => {
         </NuxtLink>
       </div>
 
-      <!-- Messages -->
       <UiAlert v-if="successMessage" type="success" class="mb-6" dismissible @dismiss="successMessage = ''">
         {{ successMessage }}
       </UiAlert>
@@ -167,10 +164,8 @@ onMounted(() => {
         {{ error }}
       </UiAlert>
 
-      <!-- Filters -->
       <div class="bg-white border border-gray-200 rounded-xl p-4 mb-6">
         <div class="flex flex-wrap items-end gap-4">
-          <!-- Search -->
           <div class="flex-1 min-w-[200px]">
             <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
             <input
@@ -182,7 +177,6 @@ onMounted(() => {
             />
           </div>
 
-          <!-- Status Filter -->
           <div class="w-48">
             <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select
@@ -208,12 +202,10 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Loading -->
       <div v-if="isLoading" class="flex justify-center py-12">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
 
-      <!-- Artworks Table -->
       <div v-else-if="artworks.length > 0" class="bg-white border border-gray-200 rounded-xl overflow-hidden">
         <table class="w-full">
           <thead class="bg-gray-50 border-b border-gray-200">
@@ -306,7 +298,6 @@ onMounted(() => {
                     </svg>
                   </NuxtLink>
 
-                  <!-- Status Actions -->
                   <button
                     v-if="artwork.status === 'DRAFT'"
                     class="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg"
@@ -344,7 +335,6 @@ onMounted(() => {
           </tbody>
         </table>
 
-        <!-- Pagination -->
         <div v-if="pagination.totalPages > 1" class="flex items-center justify-between px-6 py-4 border-t border-gray-200">
           <p class="text-sm text-gray-600">
             Showing {{ (filters.page - 1) * filters.limit + 1 }} to {{ Math.min(filters.page * filters.limit, pagination.total) }} of {{ pagination.total }} artworks
@@ -368,7 +358,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Empty State -->
       <div v-else class="bg-white border border-gray-200 rounded-xl p-12 text-center">
         <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -383,7 +372,6 @@ onMounted(() => {
         </NuxtLink>
       </div>
 
-      <!-- Delete Confirmation Modal -->
       <Teleport to="body">
         <div
           v-if="deleteModal.isOpen"

@@ -7,24 +7,21 @@ export default defineNuxtPlugin(() => {
   let isRefreshing = false
   let refreshPromise: Promise<boolean> | null = null
 
-  // Global fetch interceptor for handling 401 errors
-  const originalFetch = globalThis.$fetch
+  const originalFetch = globalThis.$fetch as typeof $fetch
 
-  globalThis.$fetch = async (request: any, options: any = {}) => {
+  const interceptedFetch = async (request: any, options: any = {}): Promise<any> => {
     try {
       return await originalFetch(request, options)
-    } catch (error: any) {
-      const status = error?.response?.status || error?.status || error?.statusCode
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number }; status?: number; statusCode?: number }
+      const status = err?.response?.status || err?.status || err?.statusCode
 
-      // Handle 401 Unauthorized
       if (status === 401 && authStore.isAuthenticated) {
-        // Check if this is a login/register/refresh request - don't intercept those
         const url = typeof request === 'string' ? request : request?.url || ''
         if (url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/refresh')) {
           throw error
         }
 
-        // Try to refresh the token
         if (authStore.refreshToken && !isRefreshing) {
           isRefreshing = true
           refreshPromise = authStore.refreshAccessToken()
@@ -35,7 +32,6 @@ export default defineNuxtPlugin(() => {
             refreshPromise = null
 
             if (refreshed) {
-              // Retry the original request with new token
               const newOptions = {
                 ...options,
                 headers: {
@@ -45,7 +41,6 @@ export default defineNuxtPlugin(() => {
               }
               return await originalFetch(request, newOptions)
             } else {
-              // Refresh failed - logout user
               await handleLogout()
               throw error
             }
@@ -56,11 +51,9 @@ export default defineNuxtPlugin(() => {
             throw error
           }
         } else if (isRefreshing && refreshPromise) {
-          // Wait for ongoing refresh
           try {
             const refreshed = await refreshPromise
             if (refreshed) {
-              // Retry with new token
               const newOptions = {
                 ...options,
                 headers: {
@@ -71,11 +64,9 @@ export default defineNuxtPlugin(() => {
               return await originalFetch(request, newOptions)
             }
           } catch {
-            // Refresh failed
           }
           throw error
         } else {
-          // No refresh token - logout
           await handleLogout()
           throw error
         }
@@ -85,13 +76,16 @@ export default defineNuxtPlugin(() => {
     }
   }
 
+  interceptedFetch.raw = originalFetch.raw
+  interceptedFetch.create = originalFetch.create
+
+  globalThis.$fetch = interceptedFetch as typeof $fetch
+
   async function handleLogout() {
     authStore.clearAuth()
 
-    // Only redirect if not already on auth pages
     const currentPath = router.currentRoute.value.path
     if (!currentPath.startsWith('/auth/')) {
-      // Include redirect URL so user can return after login
       const redirectUrl = encodeURIComponent(currentPath)
       await router.push(`/auth/login?expired=true&redirect=${redirectUrl}`)
     }

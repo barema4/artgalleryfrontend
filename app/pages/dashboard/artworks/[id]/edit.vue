@@ -54,8 +54,6 @@ async function fetchArtwork() {
   error.value = ''
 
   try {
-    // We need to get the artwork by ID, but the service uses slug
-    // For now, let's fetch all artworks and find by ID
     const response = await artworkService.getArtworks({ limit: 100 })
     artwork.value = response.data.find(a => a.id === artworkId.value) || null
 
@@ -64,7 +62,6 @@ async function fetchArtwork() {
       return
     }
 
-    // Populate form
     form.title = artwork.value.title
     form.description = artwork.value.description || ''
     form.story = artwork.value.story || ''
@@ -127,7 +124,6 @@ async function handleSubmit() {
     await artworkService.updateArtwork(artworkId.value, form)
     successMessage.value = 'Artwork updated successfully'
 
-    // Add new images if any
     for (const image of newImages.value) {
       if (image.url.trim()) {
         await artworkService.addArtworkImage(artworkId.value, image)
@@ -135,7 +131,6 @@ async function handleSubmit() {
     }
     newImages.value = []
 
-    // Refresh artwork data
     await fetchArtwork()
   } catch (e: any) {
     error.value = e?.data?.message || 'Failed to update artwork'
@@ -186,7 +181,6 @@ onMounted(() => {
 <template>
   <div class="min-h-screen py-8 px-4">
     <div class="max-w-3xl mx-auto">
-      <!-- Header -->
       <div class="mb-8">
         <NuxtLink
           to="/dashboard/artworks"
@@ -233,13 +227,11 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Loading -->
       <div v-if="isLoading" class="flex justify-center py-12">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
 
       <template v-else-if="artwork">
-        <!-- Messages -->
         <UiAlert v-if="successMessage" type="success" class="mb-6" dismissible @dismiss="successMessage = ''">
           {{ successMessage }}
         </UiAlert>
@@ -247,9 +239,7 @@ onMounted(() => {
           {{ error }}
         </UiAlert>
 
-        <!-- Form -->
         <form @submit.prevent="handleSubmit" class="space-y-8">
-          <!-- Basic Info -->
           <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
             <h2 class="text-lg font-semibold text-gray-900">Basic Information</h2>
 
@@ -286,7 +276,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Details -->
           <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
             <h2 class="text-lg font-semibold text-gray-900">Artwork Details</h2>
 
@@ -383,7 +372,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Pricing -->
           <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
             <h2 class="text-lg font-semibold text-gray-900">Pricing</h2>
 
@@ -424,7 +412,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Tags -->
           <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
             <h2 class="text-lg font-semibold text-gray-900">Tags</h2>
 
@@ -465,7 +452,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Existing Images -->
           <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
             <h2 class="text-lg font-semibold text-gray-900">Current Images</h2>
 
@@ -516,7 +502,6 @@ onMounted(() => {
             <p v-else class="text-gray-500">No images uploaded yet.</p>
           </div>
 
-          <!-- Add New Images -->
           <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
             <div class="flex items-center justify-between">
               <h2 class="text-lg font-semibold text-gray-900">Add New Images</h2>
@@ -569,7 +554,6 @@ onMounted(() => {
             <p v-else class="text-gray-500 text-sm">Click "Add Image" to add more images to this artwork.</p>
           </div>
 
-          <!-- Submit -->
           <div class="flex gap-4">
             <NuxtLink
               to="/dashboard/artworks"
@@ -588,7 +572,6 @@ onMounted(() => {
         </form>
       </template>
 
-      <!-- Not Found -->
       <div v-else class="text-center py-12">
         <h2 class="text-2xl font-bold text-gray-900">Artwork not found</h2>
         <p class="text-gray-600 mt-2">The artwork you're looking for doesn't exist.</p>

@@ -1,8 +1,4 @@
-// Magazine Types
-
 export type ArticleStatus = 'DRAFT' | 'PUBLISHED' | 'SCHEDULED' | 'ARCHIVED'
-
-// Magazine Edition Types
 
 export interface MagazineEdition {
   id: string
@@ -53,8 +49,6 @@ export interface MagazineEditionListResponse {
   totalPages: number
 }
 
-// Article Category Types
-
 export interface ArticleCategory {
   id: string
   name: string
@@ -75,8 +69,6 @@ export interface UpdateArticleCategoryData {
   name?: string
   description?: string
 }
-
-// Article Types
 
 export interface ArticleTag {
   id: string

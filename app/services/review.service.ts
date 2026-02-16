@@ -20,7 +20,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -38,7 +37,6 @@ function getHeaders(): Record<string, string> {
 
 export function useReviewService() {
   return {
-    // Public endpoints
     getArtworkReviews: async (artworkId: string, params?: ReviewListParams): Promise<ReviewListResponse> => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
@@ -54,7 +52,6 @@ export function useReviewService() {
       return $fetch<ReviewStats>(`${API_BASE}/artworks/${artworkId}/reviews/stats`)
     },
 
-    // Authenticated endpoints
     createReview: async (artworkId: string, data: CreateReviewData): Promise<Review> => {
       return $fetch<Review>(`${API_BASE}/artworks/${artworkId}/reviews`, {
         method: 'POST',
@@ -97,7 +94,6 @@ export function useReviewService() {
       })
     },
 
-    // Admin endpoints
     adminDeleteReview: async (id: string): Promise<void> => {
       return $fetch<void>(`${API_BASE}/reviews/${id}/admin`, {
         method: 'DELETE',
