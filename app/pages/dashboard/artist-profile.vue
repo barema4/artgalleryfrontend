@@ -214,19 +214,20 @@ onMounted(() => {
         <div class="bg-white border border-gray-200 rounded-xl p-6">
           <h2 class="text-lg font-semibold text-gray-900 mb-4">Profile Images</h2>
           <div class="space-y-4">
-            <UiInput
+            <UiImageUpload
               v-model="form.profileImage"
-              label="Profile Image URL"
-              placeholder="https://example.com/your-photo.jpg"
+              label="Profile Image"
+              folder="artists/profiles"
+              :alt="form.displayName"
+              preview-aspect="square"
             />
-            <UiInput
+            <UiImageUpload
               v-model="form.coverImage"
-              label="Cover Image URL"
-              placeholder="https://example.com/your-cover.jpg"
+              label="Cover Image"
+              folder="artists/covers"
+              :alt="form.displayName"
+              preview-aspect="video"
             />
-            <p class="text-xs text-gray-500">
-              Tip: Use a file upload service or integrate the Media module for image uploads.
-            </p>
           </div>
         </div>
 

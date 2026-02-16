@@ -52,7 +52,13 @@ export function useTagService() {
     },
 
     getTagBySlug: async (slug: string): Promise<Tag> => {
-      return $fetch<Tag>(`${API_BASE}/tags/${slug}`)
+      return $fetch<Tag>(`${API_BASE}/tags/slug/${slug}`)
+    },
+
+    getTagById: async (id: string): Promise<Tag> => {
+      return $fetch<Tag>(`${API_BASE}/tags/${id}`, {
+        headers: getHeaders(),
+      })
     },
 
     createTag: async (data: CreateTagData): Promise<Tag> => {

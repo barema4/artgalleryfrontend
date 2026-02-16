@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Newsletter, NewsletterStatus, NewsletterListParams, NewsletterStats, CreateNewsletterData, Subscriber, SubscriberStats } from '~/types/newsletter'
+import type { Newsletter, NewsletterStatus, NewsletterListParams, NewsletterStats, Subscriber, SubscriberStats } from '~/types/newsletter'
 import { useNewsletterService } from '~/services/newsletter.service'
 
 definePageMeta({
@@ -35,18 +35,7 @@ const statusOptions: { value: NewsletterStatus | ''; label: string }[] = [
   { value: 'SENT', label: 'Sent' },
 ]
 
-const showModal = ref(false)
-const isEditing = ref(false)
-const selectedNewsletter = ref<Newsletter | null>(null)
-const isSaving = ref(false)
 const isSending = ref(false)
-
-const formData = reactive<CreateNewsletterData>({
-  subject: '',
-  previewText: '',
-  content: '',
-  scheduledAt: undefined,
-})
 
 const subscribers = ref<Subscriber[]>([])
 const subscriberPagination = reactive({
@@ -104,51 +93,6 @@ async function fetchSubscribers() {
     error.value = e?.data?.message || 'Failed to fetch subscribers'
   } finally {
     isLoading.value = false
-  }
-}
-
-function openCreateModal() {
-  isEditing.value = false
-  selectedNewsletter.value = null
-  formData.subject = ''
-  formData.previewText = ''
-  formData.content = ''
-  formData.scheduledAt = undefined
-  showModal.value = true
-}
-
-function openEditModal(newsletter: Newsletter) {
-  isEditing.value = true
-  selectedNewsletter.value = newsletter
-  formData.subject = newsletter.subject
-  formData.previewText = newsletter.previewText || ''
-  formData.content = newsletter.content
-  formData.scheduledAt = newsletter.scheduledAt
-  showModal.value = true
-}
-
-async function saveNewsletter() {
-  if (!formData.subject || !formData.content) {
-    error.value = 'Subject and content are required'
-    return
-  }
-
-  isSaving.value = true
-  error.value = ''
-
-  try {
-    if (isEditing.value && selectedNewsletter.value) {
-      await newsletterService.updateNewsletter(selectedNewsletter.value.id, formData)
-    } else {
-      await newsletterService.createNewsletter(formData)
-    }
-    showModal.value = false
-    await fetchNewsletters()
-    await fetchStats()
-  } catch (e: any) {
-    error.value = e?.data?.message || 'Failed to save newsletter'
-  } finally {
-    isSaving.value = false
   }
 }
 
@@ -269,15 +213,15 @@ onMounted(() => {
           <h1 class="text-2xl font-bold text-gray-900">Newsletter Management</h1>
           <p class="text-gray-600 mt-1">Create, schedule, and send newsletters to subscribers</p>
         </div>
-        <button
+        <NuxtLink
+          to="/admin/newsletter/campaigns/new"
           class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          @click="openCreateModal"
         >
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           Create Newsletter
-        </button>
+        </NuxtLink>
       </div>
 
       <div v-if="stats && subscriberStats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -427,16 +371,16 @@ onMounted(() => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                       </svg>
                     </button>
-                    <button
+                    <NuxtLink
                       v-if="newsletter.status !== 'SENT'"
+                      :to="`/admin/newsletter/campaigns/${newsletter.id}`"
                       class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Edit"
-                      @click="openEditModal(newsletter)"
                     >
                       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                    </button>
+                    </NuxtLink>
                     <button
                       class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
                       title="Duplicate"
@@ -604,78 +548,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <div
-        v-if="showModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-        @click.self="showModal = false"
-      >
-        <div class="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <div class="p-6 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">
-              {{ isEditing ? 'Edit Newsletter' : 'Create Newsletter' }}
-            </h3>
-          </div>
-
-          <div class="p-6 space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
-              <input
-                v-model="formData.subject"
-                type="text"
-                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                placeholder="Newsletter subject line..."
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Preview Text</label>
-              <input
-                v-model="formData.previewText"
-                type="text"
-                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                placeholder="Brief preview shown in email clients..."
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Content *</label>
-              <textarea
-                v-model="formData.content"
-                rows="12"
-                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 font-mono text-sm"
-                placeholder="Newsletter content (HTML supported)..."
-              ></textarea>
-              <p class="text-xs text-gray-500 mt-1">You can use HTML for formatting</p>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Schedule (optional)</label>
-              <input
-                v-model="formData.scheduledAt"
-                type="datetime-local"
-                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-              />
-              <p class="text-xs text-gray-500 mt-1">Leave empty to save as draft</p>
-            </div>
-          </div>
-
-          <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
-            <button
-              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-              @click="showModal = false"
-            >
-              Cancel
-            </button>
-            <UiButton
-              :loading="isSaving"
-              :disabled="isSaving || !formData.subject || !formData.content"
-              @click="saveNewsletter"
-            >
-              {{ isEditing ? 'Update' : 'Create' }} Newsletter
-            </UiButton>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>

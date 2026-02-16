@@ -327,7 +327,7 @@ onMounted(() => {
               <div>
                 <dt class="text-sm text-gray-500">Website</dt>
                 <dd>
-                  <a v-if="artist.website" :href="artist.website" target="_blank" class="text-primary-600 hover:underline">
+                  <a v-if="artist.website" :href="artist.website" class="text-primary-600 hover:underline">
                     {{ artist.website }}
                   </a>
                   <span v-else class="text-gray-400">—</span>
@@ -336,7 +336,7 @@ onMounted(() => {
               <div>
                 <dt class="text-sm text-gray-500">Instagram</dt>
                 <dd>
-                  <a v-if="artist.instagram" :href="`https://instagram.com/${artist.instagram}`" target="_blank" class="text-primary-600 hover:underline">
+                  <a v-if="artist.instagram" :href="`https://instagram.com/${artist.instagram}`" class="text-primary-600 hover:underline">
                     @{{ artist.instagram }}
                   </a>
                   <span v-else class="text-gray-400">—</span>
@@ -345,7 +345,7 @@ onMounted(() => {
               <div>
                 <dt class="text-sm text-gray-500">Twitter</dt>
                 <dd>
-                  <a v-if="artist.twitter" :href="`https://twitter.com/${artist.twitter}`" target="_blank" class="text-primary-600 hover:underline">
+                  <a v-if="artist.twitter" :href="`https://twitter.com/${artist.twitter}`" class="text-primary-600 hover:underline">
                     @{{ artist.twitter }}
                   </a>
                   <span v-else class="text-gray-400">—</span>
@@ -354,7 +354,7 @@ onMounted(() => {
               <div>
                 <dt class="text-sm text-gray-500">Facebook</dt>
                 <dd>
-                  <a v-if="artist.facebook" :href="`https://facebook.com/${artist.facebook}`" target="_blank" class="text-primary-600 hover:underline">
+                  <a v-if="artist.facebook" :href="`https://facebook.com/${artist.facebook}`" class="text-primary-600 hover:underline">
                     {{ artist.facebook }}
                   </a>
                   <span v-else class="text-gray-400">—</span>

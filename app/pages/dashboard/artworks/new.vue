@@ -395,15 +395,13 @@ onMounted(() => {
               class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
             >
               <div class="flex-1 space-y-3">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                  <input
-                    v-model="image.url"
-                    type="url"
-                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                    placeholder="https://..."
-                  />
-                </div>
+                <UiImageUpload
+                  v-model="image.url"
+                  label="Image"
+                  folder="artworks"
+                  :alt="image.altText || form.title"
+                  preview-aspect="square"
+                />
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
                   <input

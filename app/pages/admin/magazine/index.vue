@@ -455,26 +455,26 @@ onMounted(() => {
           <p class="text-gray-600 mt-1">Create and manage magazine editions and articles</p>
         </div>
         <div class="flex gap-2">
-          <button
+          <NuxtLink
             v-if="activeTab === 'editions'"
+            to="/admin/magazine/editions/new"
             class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-            @click="openEditionModal()"
           >
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             New Edition
-          </button>
-          <button
+          </NuxtLink>
+          <NuxtLink
             v-if="activeTab === 'articles'"
+            to="/admin/magazine/articles/new"
             class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-            @click="openArticleModal()"
           >
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             New Article
-          </button>
+          </NuxtLink>
           <button
             v-if="activeTab === 'categories'"
             class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
@@ -583,12 +583,12 @@ onMounted(() => {
                 >
                   Publish
                 </button>
-                <button
+                <NuxtLink
+                  :to="`/admin/magazine/editions/${edition.id}`"
                   class="px-3 py-1.5 text-gray-600 text-sm font-medium hover:bg-gray-100 rounded-lg transition-colors"
-                  @click="openEditionModal(edition)"
                 >
                   Edit
-                </button>
+                </NuxtLink>
                 <button
                   class="px-3 py-1.5 text-red-600 text-sm font-medium hover:bg-red-50 rounded-lg transition-colors"
                   @click="deleteEdition(edition)"
@@ -606,12 +606,12 @@ onMounted(() => {
           </svg>
           <h3 class="text-lg font-medium text-gray-900 mb-1">No editions yet</h3>
           <p class="text-gray-500 mb-4">Create your first magazine edition to get started.</p>
-          <button
+          <NuxtLink
+            to="/admin/magazine/editions/new"
             class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-            @click="openEditionModal()"
           >
             Create Edition
-          </button>
+          </NuxtLink>
         </div>
       </div>
 
@@ -704,15 +704,15 @@ onMounted(() => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </button>
-                    <button
+                    <NuxtLink
+                      :to="`/admin/magazine/articles/${article.id}`"
                       class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Edit"
-                      @click="openArticleModal(article)"
                     >
                       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                    </button>
+                    </NuxtLink>
                     <button
                       class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete"
@@ -732,12 +732,12 @@ onMounted(() => {
         <div v-else class="text-center py-12 bg-white border border-gray-200 rounded-xl">
           <h3 class="text-lg font-medium text-gray-900 mb-1">No articles found</h3>
           <p class="text-gray-500 mb-4">Create your first article to get started.</p>
-          <button
+          <NuxtLink
+            to="/admin/magazine/articles/new"
             class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-            @click="openArticleModal()"
           >
             Create Article
-          </button>
+          </NuxtLink>
         </div>
       </div>
 
@@ -857,15 +857,14 @@ onMounted(() => {
               ></textarea>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Cover Image URL *</label>
-              <input
-                v-model="editionForm.coverImage"
-                type="url"
-                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                placeholder="https://..."
-              />
-            </div>
+            <UiImageUpload
+              v-model="editionForm.coverImage"
+              label="Cover Image"
+              folder="magazine/editions"
+              :alt="editionForm.title"
+              required
+              preview-aspect="portrait"
+            />
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">PDF URL (optional)</label>
@@ -995,15 +994,13 @@ onMounted(() => {
               </div>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
-              <input
-                v-model="articleForm.coverImage"
-                type="url"
-                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                placeholder="https://..."
-              />
-            </div>
+            <UiImageUpload
+              v-model="articleForm.coverImage"
+              label="Cover Image"
+              folder="magazine/articles"
+              :alt="articleForm.title"
+              preview-aspect="video"
+            />
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>

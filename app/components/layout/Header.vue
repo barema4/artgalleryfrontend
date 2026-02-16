@@ -13,6 +13,7 @@ const isUserMenuOpen = ref(false)
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Artworks', href: '/artworks' },
+  { name: 'Exhibitions', href: '/exhibitions' },
   { name: 'Shop', href: '/shop' },
   { name: 'Artists', href: '/artists' },
   { name: 'Magazine', href: '/magazine' },

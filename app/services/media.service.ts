@@ -3,6 +3,9 @@ import type {
   MediaListParams,
   MediaListResponse,
   DeleteMultipleResponse,
+  UploadSignatureRequest,
+  UploadSignatureResponse,
+  ConfirmDirectUploadData,
 } from '~/types/media'
 import { useAuthStore } from '~/stores/auth'
 
@@ -59,6 +62,80 @@ export function useMediaService() {
         method: 'POST',
         headers: getHeaders(),
         body: formData,
+      })
+    },
+
+    getUploadSignature: async (data: UploadSignatureRequest): Promise<UploadSignatureResponse> => {
+      return $fetch<UploadSignatureResponse>(`${API_BASE}/media/upload/signature`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: data,
+      })
+    },
+
+    uploadToCloudinary: async (
+      signature: UploadSignatureResponse,
+      file: File,
+    ): Promise<Record<string, any>> => {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('api_key', signature.apiKey)
+      formData.append('timestamp', String(signature.timestamp))
+      formData.append('signature', signature.signature)
+      formData.append('public_id', signature.publicId)
+      formData.append('folder', signature.folder)
+
+      return $fetch<Record<string, any>>(signature.uploadUrl, {
+        method: 'POST',
+        body: formData,
+      })
+    },
+
+    confirmDirectUpload: async (data: ConfirmDirectUploadData): Promise<MediaFile> => {
+      return $fetch<MediaFile>(`${API_BASE}/media/upload/confirm`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: data,
+      })
+    },
+
+    directUpload: async (
+      file: File,
+      folder?: string,
+      alt?: string,
+    ): Promise<MediaFile> => {
+      const service = useMediaService()
+
+      const resourceType = file.type.startsWith('image/')
+        ? 'image'
+        : file.type.startsWith('video/')
+          ? 'video'
+          : 'raw'
+
+      // Step 1: Get signed params
+      const signature = await service.getUploadSignature({
+        resourceType,
+        folder,
+        alt,
+      })
+
+      // Step 2: Upload directly to Cloudinary
+      const cloudinaryRes = await service.uploadToCloudinary(signature, file)
+
+      // Step 3: Confirm with backend
+      return service.confirmDirectUpload({
+        publicId: cloudinaryRes.public_id,
+        version: String(cloudinaryRes.version),
+        signature: cloudinaryRes.signature,
+        secureUrl: cloudinaryRes.secure_url,
+        originalFilename: cloudinaryRes.original_filename,
+        format: cloudinaryRes.format,
+        resourceType: cloudinaryRes.resource_type,
+        bytes: cloudinaryRes.bytes,
+        width: cloudinaryRes.width,
+        height: cloudinaryRes.height,
+        folder,
+        alt,
       })
     },
 
