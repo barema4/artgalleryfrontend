@@ -66,6 +66,8 @@ export interface ArtworkStats {
   likeCount: number
   favoriteCount: number
   commentCount: number
+  shareCount?: number
+  inquiryCount?: number
 }
 
 export interface CreateArtworkData {

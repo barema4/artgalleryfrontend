@@ -2,6 +2,7 @@
 defineProps<{
   artwork: {
     id: string
+    slug?: string
     title: string
     artist: string
     imageUrl: string
@@ -15,7 +16,7 @@ defineProps<{
 
 <template>
   <NuxtLink
-    :to="`/artworks/${artwork.id}`"
+    :to="`/artworks/${artwork.slug || artwork.id}`"
     class="group flex-shrink-0 snap-start"
     :class="{
       'w-48 sm:w-56': size === 'small',
@@ -26,9 +27,8 @@ defineProps<{
     <div
       class="relative overflow-hidden rounded-xl bg-gray-100"
       :class="{
-        'aspect-[3/4]': size === 'small',
-        'aspect-[4/5]': size === 'medium' || !size,
-        'aspect-[3/4]': size === 'large'
+        'aspect-[3/4]': size === 'small' || size === 'large',
+        'aspect-[4/5]': size === 'medium' || !size
       }"
     >
       <img

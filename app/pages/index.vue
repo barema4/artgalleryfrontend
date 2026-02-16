@@ -5,7 +5,6 @@ import { useArtistsStore } from '~/stores/artists'
 const artworksStore = useArtworksStore()
 const artistsStore = useArtistsStore()
 
-// Fetch data on mount
 onMounted(async () => {
   await Promise.all([
     artworksStore.fetchArtworks({ limit: 12, featured: true }),
@@ -13,20 +12,17 @@ onMounted(async () => {
   ])
 })
 
-// Computed properties for template
 const featuredArtwork = computed(() => artworksStore.artworks[0] || null)
 const featuredArtworks = computed(() => artworksStore.artworks.slice(0, 8))
 const artists = computed(() => artistsStore.artists)
 const isLoading = computed(() => artworksStore.loading || artistsStore.loading)
 
-// Get primary image URL for an artwork
 function getArtworkImage(artwork: any) {
   if (!artwork) return 'https://images.unsplash.com/photo-1582582621959-48d27397dc69?w=800&q=80'
   const primaryImage = artwork.images?.find((img: any) => img.isPrimary)
   return primaryImage?.url || artwork.images?.[0]?.url || 'https://images.unsplash.com/photo-1582582621959-48d27397dc69?w=800&q=80'
 }
 
-// Static data - to be replaced with API calls later
 const collections = [
   { id: '1', title: 'West African Textiles', imageUrl: 'https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=800&q=80', itemCount: 42 },
   { id: '2', title: 'East African Beadwork', imageUrl: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=800&q=80', itemCount: 38 },
@@ -64,7 +60,6 @@ const categories = [
 
 <template>
   <div>
-    <!-- Loading State -->
     <div v-if="isLoading && !featuredArtwork" class="min-h-[75vh] flex items-center justify-center bg-earth-100">
       <div class="text-center">
         <div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -72,7 +67,6 @@ const categories = [
       </div>
     </div>
 
-    <!-- Hero Section -->
     <section v-else class="relative h-[75vh] sm:h-[85vh] overflow-hidden">
       <img
         :src="featuredArtwork ? getArtworkImage(featuredArtwork) : 'https://images.unsplash.com/photo-1582582621959-48d27397dc69?w=1920&q=80'"
@@ -81,7 +75,6 @@ const categories = [
       />
       <div class="absolute inset-0 bg-gradient-to-t from-bark-950/90 via-bark-900/40 to-transparent"></div>
 
-      <!-- Decorative Pattern Overlay -->
       <div class="absolute inset-0 opacity-10 bg-repeat" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23d99f13&quot; fill-opacity=&quot;0.4&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
 
       <div class="absolute inset-0 flex items-end">
@@ -124,7 +117,6 @@ const categories = [
       </div>
     </section>
 
-    <!-- Introduction Section -->
     <section class="py-16 lg:py-20 bg-gradient-warm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto">
@@ -144,7 +136,6 @@ const categories = [
       </div>
     </section>
 
-    <!-- Featured Artworks -->
     <section v-if="featuredArtworks.length > 0" class="py-8 lg:py-12 bg-white">
       <UiHorizontalScroll title="Featured Artworks" subtitle="Handpicked masterpieces celebrating African heritage" view-all-link="/artworks">
         <UiArtworkCard
@@ -163,7 +154,6 @@ const categories = [
       </UiHorizontalScroll>
     </section>
 
-    <!-- Collections -->
     <section class="py-8 lg:py-12 bg-earth-100">
       <UiHorizontalScroll title="Explore Collections" subtitle="Curated selections of African artistry" view-all-link="/collections">
         <UiCollectionCard
@@ -175,7 +165,6 @@ const categories = [
       </UiHorizontalScroll>
     </section>
 
-    <!-- Categories Grid -->
     <section class="py-12 lg:py-20 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
@@ -203,7 +192,6 @@ const categories = [
       </div>
     </section>
 
-    <!-- Featured Artists -->
     <section v-if="artists.length > 0" class="py-12 lg:py-20 bg-gradient-to-br from-bark-900 via-earth-900 to-bark-950">
       <div class="max-w-[1400px] mx-auto">
         <div class="flex items-end justify-between mb-10 px-4 sm:px-6 lg:px-8">
@@ -235,7 +223,6 @@ const categories = [
       </div>
     </section>
 
-    <!-- Trending Now -->
     <section class="py-8 lg:py-12 bg-white">
       <UiHorizontalScroll title="Trending Now" subtitle="Popular pieces capturing hearts worldwide" view-all-link="/artworks?sort=trending">
         <UiArtworkCard
@@ -247,7 +234,6 @@ const categories = [
       </UiHorizontalScroll>
     </section>
 
-    <!-- Stories & Articles -->
     <section class="py-8 lg:py-12 bg-earth-100">
       <UiHorizontalScroll title="Stories & Insights" subtitle="Explore the world of African art" view-all-link="/stories">
         <UiStoryCard
@@ -258,7 +244,6 @@ const categories = [
       </UiHorizontalScroll>
     </section>
 
-    <!-- CTA Section -->
     <section class="py-16 lg:py-24 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="relative rounded-3xl overflow-hidden">
@@ -269,7 +254,6 @@ const categories = [
           />
           <div class="absolute inset-0 bg-gradient-to-r from-bark-900/95 via-bark-900/80 to-bark-900/60"></div>
 
-          <!-- Decorative elements -->
           <div class="absolute top-0 right-0 w-1/2 h-full opacity-20">
             <svg class="w-full h-full" viewBox="0 0 400 400" fill="none">
               <circle cx="200" cy="200" r="150" stroke="#d99f13" stroke-width="2" stroke-dasharray="10 10"/>
@@ -312,7 +296,6 @@ const categories = [
       </div>
     </section>
 
-    <!-- Newsletter Section -->
     <section class="py-16 lg:py-20 bg-gradient-warm border-t border-earth-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-2xl mb-6">

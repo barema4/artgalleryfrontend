@@ -23,7 +23,6 @@ const errors = reactive({
 const serverError = ref('')
 const isSubmitting = ref(false)
 
-// Check if session expired
 const sessionExpired = computed(() => route.query.expired === 'true')
 
 function validateForm(): boolean {
@@ -62,7 +61,6 @@ async function handleSubmit() {
   isSubmitting.value = false
 
   if (result.success) {
-    // Redirect to the original destination or home
     const redirect = route.query.redirect as string || '/'
     router.push(redirect)
   } else {
@@ -74,7 +72,6 @@ async function handleSubmit() {
 <template>
   <div class="min-h-[70vh] flex items-center justify-center py-12 px-4 bg-gradient-warm">
     <div class="w-full max-w-md">
-      <!-- Header -->
       <div class="text-center mb-8">
         <NuxtLink to="/" class="inline-flex items-center gap-3 mb-6">
           <div class="w-14 h-14 bg-gradient-sunset rounded-xl flex items-center justify-center shadow-warm">
@@ -87,20 +84,16 @@ async function handleSubmit() {
         <p class="text-bark-600 mt-2">Sign in to your account to continue</p>
       </div>
 
-      <!-- Session Expired Alert -->
       <UiAlert v-if="sessionExpired" type="warning" class="mb-4">
         Your session has expired. Please sign in again.
       </UiAlert>
 
-      <!-- Form Card -->
       <div class="bg-white rounded-2xl shadow-warm-lg p-8 border border-earth-200">
         <form class="space-y-5" @submit.prevent="handleSubmit">
-          <!-- Server Error -->
           <UiAlert v-if="serverError" type="error" dismissible @dismiss="serverError = ''">
             {{ serverError }}
           </UiAlert>
 
-          <!-- Email -->
           <UiInput
             v-model="form.email"
             type="email"
@@ -111,7 +104,6 @@ async function handleSubmit() {
             required
           />
 
-          <!-- Password -->
           <UiInput
             v-model="form.password"
             type="password"
@@ -122,7 +114,6 @@ async function handleSubmit() {
             required
           />
 
-          <!-- Forgot Password Link -->
           <div class="flex justify-end">
             <NuxtLink
               to="/auth/forgot-password"
@@ -132,7 +123,6 @@ async function handleSubmit() {
             </NuxtLink>
           </div>
 
-          <!-- Submit Button -->
           <UiButton
             type="submit"
             :loading="isSubmitting"
@@ -144,7 +134,6 @@ async function handleSubmit() {
           </UiButton>
         </form>
 
-        <!-- Divider -->
         <div class="relative my-8">
           <div class="absolute inset-0 flex items-center">
             <div class="w-full border-t border-earth-200"></div>
@@ -154,7 +143,6 @@ async function handleSubmit() {
           </div>
         </div>
 
-        <!-- Social Login -->
         <div class="space-y-3">
           <button
             type="button"
@@ -171,7 +159,6 @@ async function handleSubmit() {
         </div>
       </div>
 
-      <!-- Register Link -->
       <p class="text-center text-bark-600 mt-8">
         Don't have an account?
         <NuxtLink to="/auth/register" class="text-primary-600 font-semibold hover:text-primary-700">

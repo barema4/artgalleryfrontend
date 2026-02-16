@@ -21,7 +21,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -39,7 +38,6 @@ function getHeaders() {
 
 export function useArtistService() {
   return {
-    // Public endpoints
     getArtists: async (params?: ArtistListParams): Promise<ArtistListResponse> => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
@@ -61,7 +59,6 @@ export function useArtistService() {
       return $fetch<ArtistStats>(`${API_BASE}/artists/${id}/stats`)
     },
 
-    // Current user artist profile
     getMyArtistProfile: async (): Promise<Artist | null> => {
       return $fetch<Artist | null>(`${API_BASE}/artists/me/profile`, {
         headers: getHeaders(),
@@ -91,7 +88,6 @@ export function useArtistService() {
       })
     },
 
-    // Follow/Unfollow
     followArtist: async (id: string): Promise<{ message: string }> => {
       return $fetch<{ message: string }>(`${API_BASE}/artists/${id}/follow`, {
         method: 'POST',
@@ -119,7 +115,6 @@ export function useArtistService() {
       })
     },
 
-    // Admin endpoints
     verifyArtist: async (id: string): Promise<Artist> => {
       return $fetch<Artist>(`${API_BASE}/artists/${id}/verify`, {
         method: 'PUT',

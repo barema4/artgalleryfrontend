@@ -1,25 +1,36 @@
 <script setup lang="ts">
+import type { Artwork } from '~/types/artwork'
 import { useArtworksStore } from '~/stores/artworks'
 
 const artworksStore = useArtworksStore()
 const { artworks, loading, error } = storeToRefs(artworksStore)
 
-const selectedCategory = ref<string | null>(null)
+const selectedCategoryId = ref<string | null>(null)
 
 const filteredArtworks = computed(() => {
-  if (selectedCategory.value) {
-    return artworksStore.byCategory(selectedCategory.value)
+  if (selectedCategoryId.value) {
+    return artworksStore.byCategory(selectedCategoryId.value)
   }
   return artworks.value
 })
 
 const categories = computed(() => {
-  const cats = new Set(artworks.value.map((a) => a.category))
-  return Array.from(cats)
+  const categoryMap = new Map<string, { id: string; name: string }>()
+  artworks.value.forEach((a) => {
+    if (a.category) {
+      categoryMap.set(a.category.id, { id: a.category.id, name: a.category.name })
+    }
+  })
+  return Array.from(categoryMap.values())
 })
 
 function clearFilter() {
-  selectedCategory.value = null
+  selectedCategoryId.value = null
+}
+
+function getPrimaryImage(artwork: Artwork): string | undefined {
+  const primary = artwork.images?.find(img => img.isPrimary)
+  return primary?.url || artwork.images?.[0]?.url
 }
 
 await useAsyncData('artworks', () => artworksStore.fetchArtworks())
@@ -49,7 +60,7 @@ await useAsyncData('artworks', () => artworksStore.fetchArtworks())
       <nav v-if="categories.length > 0" class="flex flex-wrap gap-2 justify-center mb-10 px-4">
         <button
           class="px-5 py-2 text-sm font-medium rounded-full border transition-all duration-200"
-          :class="!selectedCategory
+          :class="!selectedCategoryId
             ? 'bg-gray-900 text-white border-gray-900'
             : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'"
           @click="clearFilter"
@@ -58,14 +69,14 @@ await useAsyncData('artworks', () => artworksStore.fetchArtworks())
         </button>
         <button
           v-for="category in categories"
-          :key="category"
+          :key="category.id"
           class="px-5 py-2 text-sm font-medium rounded-full border transition-all duration-200"
-          :class="selectedCategory === category
+          :class="selectedCategoryId === category.id
             ? 'bg-gray-900 text-white border-gray-900'
             : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'"
-          @click="selectedCategory = category"
+          @click="selectedCategoryId = category.id"
         >
-          {{ category }}
+          {{ category.name }}
         </button>
       </nav>
 
@@ -85,12 +96,18 @@ await useAsyncData('artworks', () => artworksStore.fetchArtworks())
             <!-- Image -->
             <div class="relative aspect-[4/3] overflow-hidden bg-gray-100">
               <img
-                :src="artwork.imageUrl"
+                v-if="getPrimaryImage(artwork)"
+                :src="getPrimaryImage(artwork)"
                 :alt="artwork.title"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
+              <div v-else class="w-full h-full flex items-center justify-center">
+                <svg class="w-16 h-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
               <span
-                v-if="artwork.sold"
+                v-if="artwork.status === 'SOLD'"
                 class="absolute top-3 right-3 px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-md"
               >
                 Sold
@@ -102,14 +119,15 @@ await useAsyncData('artworks', () => artworksStore.fetchArtworks())
               <h2 class="text-lg font-semibold text-gray-900 mb-1 line-clamp-1">
                 {{ artwork.title }}
               </h2>
-              <p class="text-gray-600 text-sm mb-1">{{ artwork.artist }}</p>
-              <p class="text-gray-400 text-sm mb-1">{{ artwork.year }}</p>
-              <p class="text-gray-500 text-xs uppercase tracking-wide mb-3">
-                {{ artwork.category }}
+              <p v-if="artwork.artist" class="text-gray-600 text-sm mb-1">{{ artwork.artist.displayName }}</p>
+              <p v-if="artwork.year" class="text-gray-400 text-sm mb-1">{{ artwork.year }}</p>
+              <p v-if="artwork.category" class="text-gray-500 text-xs uppercase tracking-wide mb-3">
+                {{ artwork.category.name }}
               </p>
-              <p class="text-xl font-bold text-gray-900">
-                ${{ artwork.price.toLocaleString() }}
+              <p v-if="artwork.price" class="text-xl font-bold text-gray-900">
+                {{ new Intl.NumberFormat('en-US', { style: 'currency', currency: artwork.currency || 'USD', minimumFractionDigits: 0 }).format(artwork.price) }}
               </p>
+              <p v-else class="text-gray-500">Price on request</p>
             </div>
           </article>
         </div>

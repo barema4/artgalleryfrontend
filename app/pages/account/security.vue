@@ -8,7 +8,6 @@ definePageMeta({
 
 const authStore = useAuthStore()
 
-// Fetch fresh user data to ensure emailVerified is up to date
 onMounted(async () => {
   await authStore.fetchCurrentUser()
 })
@@ -135,28 +134,23 @@ async function resendVerification() {
 <template>
   <div class="min-h-[80vh] py-12 px-4">
     <div class="max-w-2xl mx-auto">
-      <!-- Header -->
       <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-900">Security Settings</h1>
         <p class="text-gray-600 mt-1">Manage your password and account security</p>
       </div>
 
-      <!-- Change Password Card -->
       <div class="bg-white border border-gray-200 rounded-xl p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Change Password</h2>
 
         <form class="space-y-4" @submit.prevent="handleSubmit">
-          <!-- Success Message -->
           <UiAlert v-if="successMessage" type="success" dismissible @dismiss="successMessage = ''">
             {{ successMessage }}
           </UiAlert>
 
-          <!-- Error Message -->
           <UiAlert v-if="errorMessage" type="error" dismissible @dismiss="errorMessage = ''">
             {{ errorMessage }}
           </UiAlert>
 
-          <!-- Current Password -->
           <UiInput
             v-model="form.currentPassword"
             type="password"
@@ -166,7 +160,6 @@ async function resendVerification() {
             autocomplete="current-password"
           />
 
-          <!-- New Password -->
           <div>
             <UiInput
               v-model="form.newPassword"
@@ -176,7 +169,6 @@ async function resendVerification() {
               :error="errors.newPassword"
               autocomplete="new-password"
             />
-            <!-- Password Requirements -->
             <ul class="mt-2 space-y-1">
               <li
                 v-for="req in passwordRequirements"
@@ -195,7 +187,6 @@ async function resendVerification() {
             </ul>
           </div>
 
-          <!-- Confirm New Password -->
           <UiInput
             v-model="form.confirmPassword"
             type="password"
@@ -205,7 +196,6 @@ async function resendVerification() {
             autocomplete="new-password"
           />
 
-          <!-- Submit Button -->
           <div class="flex justify-end pt-2">
             <UiButton
               type="submit"
@@ -218,7 +208,6 @@ async function resendVerification() {
         </form>
       </div>
 
-      <!-- Email Verification Status -->
       <div class="bg-white border border-gray-200 rounded-xl p-6 mt-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Email Verification</h2>
 
@@ -229,7 +218,6 @@ async function resendVerification() {
             </div>
           </div>
 
-          <!-- Verified State -->
           <div v-if="authStore.isEmailVerified" class="flex items-center gap-2">
             <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
@@ -237,7 +225,6 @@ async function resendVerification() {
             <span class="text-sm font-medium text-green-600">Verified</span>
           </div>
 
-          <!-- Not Verified State -->
           <div v-else class="flex items-center gap-3">
             <span v-if="resendSuccess" class="text-sm text-green-600">Email sent!</span>
             <div class="flex items-center gap-2">
@@ -258,7 +245,6 @@ async function resendVerification() {
         </div>
       </div>
 
-      <!-- Account Actions -->
       <div class="bg-white border border-gray-200 rounded-xl p-6 mt-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Account</h2>
         <div class="space-y-4">

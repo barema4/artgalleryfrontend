@@ -37,7 +37,6 @@ async function fetchArtistProfile() {
   try {
     artist.value = await artistService.getMyArtistProfile()
     if (artist.value) {
-      // Populate form with existing data
       form.slug = artist.value.slug
       form.displayName = artist.value.displayName
       form.bio = artist.value.bio || ''
@@ -50,7 +49,6 @@ async function fetchArtistProfile() {
       form.facebook = artist.value.facebook || ''
     }
   } catch (e: any) {
-    // No profile exists, that's okay
     if (e?.status !== 404 && e?.statusCode !== 404) {
       errorMessage.value = e?.data?.message || 'Failed to load profile'
     }
@@ -82,7 +80,6 @@ async function handleSubmit() {
   try {
     if (isNewProfile.value) {
       artist.value = await artistService.createMyArtistProfile(form as CreateArtistData)
-      // Update user role in auth store
       if (authStore.user) {
         authStore.user.role = 'ARTIST'
       }
@@ -118,7 +115,6 @@ async function handleDelete() {
   try {
     await artistService.deleteMyArtistProfile()
     artist.value = null
-    // Reset form
     form.slug = ''
     form.displayName = ''
     form.bio = ''
@@ -129,7 +125,6 @@ async function handleDelete() {
     form.instagram = ''
     form.twitter = ''
     form.facebook = ''
-    // Update user role
     if (authStore.user) {
       authStore.user.role = 'SUBSCRIBER'
     }
@@ -149,7 +144,6 @@ onMounted(() => {
 <template>
   <div class="min-h-[80vh] py-12 px-4">
     <div class="max-w-3xl mx-auto">
-      <!-- Header -->
       <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-900">
           {{ isNewProfile ? 'Become an Artist' : 'Artist Profile' }}
@@ -159,14 +153,11 @@ onMounted(() => {
         </p>
       </div>
 
-      <!-- Loading -->
       <div v-if="isLoading" class="flex justify-center py-12">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
 
-      <!-- Form -->
       <form v-else class="space-y-6" @submit.prevent="handleSubmit">
-        <!-- Messages -->
         <UiAlert v-if="successMessage" type="success" dismissible @dismiss="successMessage = ''">
           {{ successMessage }}
         </UiAlert>
@@ -174,7 +165,6 @@ onMounted(() => {
           {{ errorMessage }}
         </UiAlert>
 
-        <!-- Basic Info -->
         <div class="bg-white border border-gray-200 rounded-xl p-6">
           <h2 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
           <div class="space-y-4">
@@ -221,7 +211,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Images -->
         <div class="bg-white border border-gray-200 rounded-xl p-6">
           <h2 class="text-lg font-semibold text-gray-900 mb-4">Profile Images</h2>
           <div class="space-y-4">
@@ -241,7 +230,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Social Links -->
         <div class="bg-white border border-gray-200 rounded-xl p-6">
           <h2 class="text-lg font-semibold text-gray-900 mb-4">Social Links</h2>
           <div class="space-y-4">
@@ -270,7 +258,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Actions -->
         <div class="flex items-center justify-between">
           <div>
             <button

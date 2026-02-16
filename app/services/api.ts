@@ -1,6 +1,8 @@
 import type { FetchOptions } from 'ofetch'
 import { useAuthStore } from '~/stores/auth'
 
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+
 const API_BASE = '/api/v1'
 
 export function useApi() {
@@ -8,37 +10,34 @@ export function useApi() {
 
   async function request<T>(
     endpoint: string,
-    options: FetchOptions = {}
+    options: FetchOptions & { method?: HttpMethod } = {}
   ): Promise<T> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     }
 
-    // Add auth token if available
     if (authStore.accessToken) {
       headers['Authorization'] = `Bearer ${authStore.accessToken}`
     }
 
     const url = `${API_BASE}${endpoint}`
+    const fetchOptions = {
+      ...options,
+      headers,
+      method: options.method as HttpMethod,
+    }
 
     try {
-      const response = await $fetch<T>(url, {
-        ...options,
-        headers,
-      })
+      const response = await $fetch<T>(url, fetchOptions)
       return response
-    } catch (error: any) {
-      // Handle 401 - try to refresh token
-      if (error?.response?.status === 401 && authStore.refreshToken) {
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number } }
+      if (err?.response?.status === 401 && authStore.refreshToken) {
         const refreshed = await authStore.refreshAccessToken()
         if (refreshed) {
-          // Retry request with new token
           headers['Authorization'] = `Bearer ${authStore.accessToken}`
-          return $fetch<T>(url, {
-            ...options,
-            headers,
-          })
+          return $fetch<T>(url, { ...fetchOptions, headers })
         }
       }
       throw error
@@ -47,18 +46,18 @@ export function useApi() {
 
   return {
     get: <T>(endpoint: string, options?: FetchOptions) =>
-      request<T>(endpoint, { ...options, method: 'GET' }),
+      request<T>(endpoint, { ...options, method: 'GET' as HttpMethod }),
 
     post: <T>(endpoint: string, body?: any, options?: FetchOptions) =>
-      request<T>(endpoint, { ...options, method: 'POST', body }),
+      request<T>(endpoint, { ...options, method: 'POST' as HttpMethod, body }),
 
     put: <T>(endpoint: string, body?: any, options?: FetchOptions) =>
-      request<T>(endpoint, { ...options, method: 'PUT', body }),
+      request<T>(endpoint, { ...options, method: 'PUT' as HttpMethod, body }),
 
     patch: <T>(endpoint: string, body?: any, options?: FetchOptions) =>
-      request<T>(endpoint, { ...options, method: 'PATCH', body }),
+      request<T>(endpoint, { ...options, method: 'PATCH' as HttpMethod, body }),
 
     delete: <T>(endpoint: string, options?: FetchOptions) =>
-      request<T>(endpoint, { ...options, method: 'DELETE' }),
+      request<T>(endpoint, { ...options, method: 'DELETE' as HttpMethod }),
   }
 }

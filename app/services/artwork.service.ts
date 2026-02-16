@@ -23,7 +23,6 @@ function getAuthToken(): string | null {
       return parsed.accessToken || null
     }
   } catch {
-    // Fallback to store
   }
 
   const authStore = useAuthStore()
@@ -41,7 +40,6 @@ function getHeaders() {
 
 export function useArtworkService() {
   return {
-    // Public endpoints
     getArtworks: async (params?: ArtworkListParams): Promise<ArtworkListResponse> => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
@@ -69,7 +67,6 @@ export function useArtworkService() {
       return $fetch<ArtworkStats>(`${API_BASE}/artworks/${id}/stats`)
     },
 
-    // Artist endpoints (requires ARTIST role)
     createArtwork: async (data: CreateArtworkData): Promise<Artwork> => {
       return $fetch<Artwork>(`${API_BASE}/artworks`, {
         method: 'POST',
@@ -108,7 +105,6 @@ export function useArtworkService() {
       })
     },
 
-    // Image management
     addArtworkImage: async (artworkId: string, data: CreateArtworkImageData): Promise<ArtworkImage> => {
       return $fetch<ArtworkImage>(`${API_BASE}/artworks/${artworkId}/images`, {
         method: 'POST',
@@ -131,7 +127,6 @@ export function useArtworkService() {
       })
     },
 
-    // Admin endpoints
     setArtworkFeatured: async (id: string, featured: boolean): Promise<Artwork> => {
       return $fetch<Artwork>(`${API_BASE}/artworks/${id}/featured`, {
         method: 'PUT',

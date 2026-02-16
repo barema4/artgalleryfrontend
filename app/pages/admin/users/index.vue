@@ -214,7 +214,7 @@ onMounted(() => {
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                     <span class="text-sm font-medium text-gray-600">
-                      {{ (user.profile?.firstName?.[0] || user.email[0]).toUpperCase() }}
+                      {{ (user.profile?.firstName?.[0] || user.email?.[0] || 'U').toUpperCase() }}
                     </span>
                   </div>
                   <div>

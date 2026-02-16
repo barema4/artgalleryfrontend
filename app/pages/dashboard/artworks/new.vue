@@ -79,9 +79,11 @@ function removeImage(index: number) {
   const removed = form.images?.[index]
   form.images = form.images?.filter((_, i) => i !== index)
 
-  // If removed was primary, make first remaining image primary
   if (removed?.isPrimary && form.images && form.images.length > 0) {
-    form.images[0].isPrimary = true
+    const firstImage = form.images[0]
+    if (firstImage) {
+      firstImage.isPrimary = true
+    }
   }
 }
 
@@ -108,7 +110,6 @@ async function handleSubmit() {
   isSubmitting.value = true
 
   try {
-    // Filter out empty images
     const images = form.images?.filter(img => img.url.trim())
 
     const artwork = await artworkService.createArtwork({
@@ -134,7 +135,6 @@ onMounted(() => {
 <template>
   <div class="min-h-screen py-8 px-4">
     <div class="max-w-3xl mx-auto">
-      <!-- Header -->
       <div class="mb-8">
         <NuxtLink
           to="/dashboard/artworks"
@@ -149,14 +149,11 @@ onMounted(() => {
         <p class="text-gray-600 mt-1">Create a new artwork listing</p>
       </div>
 
-      <!-- Error -->
       <UiAlert v-if="error" type="error" class="mb-6" dismissible @dismiss="error = ''">
         {{ error }}
       </UiAlert>
 
-      <!-- Form -->
       <form @submit.prevent="handleSubmit" class="space-y-8">
-        <!-- Basic Info -->
         <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
           <h2 class="text-lg font-semibold text-gray-900">Basic Information</h2>
 
@@ -216,7 +213,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Details -->
         <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
           <h2 class="text-lg font-semibold text-gray-900">Artwork Details</h2>
 
@@ -299,7 +295,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Pricing -->
         <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
           <h2 class="text-lg font-semibold text-gray-900">Pricing</h2>
 
@@ -341,7 +336,6 @@ onMounted(() => {
           <p class="text-sm text-gray-500">Leave price empty for "Price on request"</p>
         </div>
 
-        <!-- Tags -->
         <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
           <h2 class="text-lg font-semibold text-gray-900">Tags</h2>
 
@@ -382,7 +376,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Images -->
         <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-900">Images</h2>
@@ -445,7 +438,6 @@ onMounted(() => {
           <p v-else class="text-gray-500 text-sm">No images added yet. Click "Add Image" to add artwork images.</p>
         </div>
 
-        <!-- Submit -->
         <div class="flex gap-4">
           <NuxtLink
             to="/dashboard/artworks"

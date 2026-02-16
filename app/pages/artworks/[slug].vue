@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import type { Artwork, ArtworkImage } from '~/types/artwork'
+import type { Review, CreateReviewData, UpdateReviewData, ReviewListParams } from '~/types/review'
 import { MEDIUM_LABELS, STATUS_LABELS } from '~/types/artwork'
 import { useArtworkService } from '~/services/artwork.service'
 import { useAuthStore } from '~/stores/auth'
+import { useReviewsStore } from '~/stores/reviews'
 
 const route = useRoute()
 const router = useRouter()
 const artworkService = useArtworkService()
 const authStore = useAuthStore()
+const reviewsStore = useReviewsStore()
 
 function goBack() {
-  // Check if there's history to go back to
   if (window.history.length > 1) {
     router.back()
   } else {
-    // Fallback to artworks list
     router.push('/artworks')
   }
 }
@@ -23,6 +24,11 @@ const artwork = ref<Artwork | null>(null)
 const isLoading = ref(true)
 const error = ref('')
 const selectedImageIndex = ref(0)
+
+const showReviewForm = ref(false)
+const editingReview = ref<Review | null>(null)
+const reviewsPage = ref(1)
+const reviewsSortBy = ref<ReviewListParams['sortBy']>('newest')
 
 const slug = computed(() => route.params.slug as string)
 
@@ -37,7 +43,6 @@ async function fetchArtwork() {
 
   try {
     artwork.value = await artworkService.getArtworkBySlug(slug.value)
-    // Set primary image as selected
     const primaryIndex = artwork.value.images?.findIndex(img => img.isPrimary) ?? 0
     selectedImageIndex.value = primaryIndex >= 0 ? primaryIndex : 0
   } catch (e: any) {
@@ -71,11 +76,77 @@ function formatDimensions(artwork: Artwork) {
   return parts.join('')
 }
 
-onMounted(() => {
-  fetchArtwork()
+async function fetchReviews() {
+  if (!artwork.value) return
+  await reviewsStore.fetchArtworkReviews(artwork.value.id, {
+    page: reviewsPage.value,
+    limit: 10,
+    sortBy: reviewsSortBy.value,
+  })
+  await reviewsStore.fetchArtworkStats(artwork.value.id)
+}
+
+async function handleReviewSubmit(data: CreateReviewData | UpdateReviewData) {
+  if (!artwork.value) return
+
+  let result
+  if (editingReview.value) {
+    result = await reviewsStore.updateReview(editingReview.value.id, data, artwork.value.id)
+  } else {
+    result = await reviewsStore.createReview(artwork.value.id, data as CreateReviewData)
+  }
+
+  if (result.success) {
+    showReviewForm.value = false
+    editingReview.value = null
+  }
+}
+
+function handleEditReview(review: Review) {
+  editingReview.value = review
+  showReviewForm.value = true
+}
+
+async function handleDeleteReview(id: string) {
+  if (!confirm('Are you sure you want to delete this review?')) return
+  if (!artwork.value) return
+
+  await reviewsStore.deleteReview(id, artwork.value.id)
+}
+
+async function handleHelpful(id: string) {
+  await reviewsStore.markHelpful(id)
+}
+
+async function handleSortChange(sortBy: ReviewListParams['sortBy']) {
+  reviewsSortBy.value = sortBy
+  reviewsPage.value = 1
+  await fetchReviews()
+}
+
+async function handleLoadMore() {
+  reviewsPage.value++
+  if (!artwork.value) return
+
+  await reviewsStore.fetchArtworkReviews(artwork.value.id, {
+    page: reviewsPage.value,
+    limit: 10,
+    sortBy: reviewsSortBy.value,
+  })
+}
+
+function cancelReviewForm() {
+  showReviewForm.value = false
+  editingReview.value = null
+}
+
+onMounted(async () => {
+  await fetchArtwork()
+  if (artwork.value) {
+    await fetchReviews()
+  }
 })
 
-// Update SEO
 useHead(() => ({
   title: artwork.value?.title ? `${artwork.value.title} | ArtGallery` : 'Artwork | ArtGallery',
   meta: [
@@ -87,7 +158,6 @@ useHead(() => ({
 <template>
   <div class="min-h-screen py-8 px-4">
     <div class="max-w-7xl mx-auto">
-      <!-- Back Button -->
       <button
         class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
         @click="goBack"
@@ -98,21 +168,16 @@ useHead(() => ({
         Back
       </button>
 
-      <!-- Loading -->
       <div v-if="isLoading" class="flex justify-center py-12">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
 
-      <!-- Error -->
       <UiAlert v-else-if="error" type="error" class="mb-6">
         {{ error }}
       </UiAlert>
 
-      <!-- Artwork Content -->
       <div v-else-if="artwork" class="grid lg:grid-cols-2 gap-8 lg:gap-12">
-        <!-- Image Gallery -->
         <div class="space-y-4">
-          <!-- Main Image -->
           <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden">
             <img
               v-if="selectedImage"
@@ -127,7 +192,6 @@ useHead(() => ({
             </div>
           </div>
 
-          <!-- Thumbnail Gallery -->
           <div v-if="artwork.images && artwork.images.length > 1" class="flex gap-2 overflow-x-auto pb-2">
             <button
               v-for="(image, index) in artwork.images"
@@ -145,9 +209,7 @@ useHead(() => ({
           </div>
         </div>
 
-        <!-- Artwork Details -->
         <div class="space-y-6">
-          <!-- Title & Artist -->
           <div>
             <div class="flex items-start justify-between gap-4">
               <h1 class="text-3xl font-bold text-gray-900">{{ artwork.title }}</h1>
@@ -179,8 +241,8 @@ useHead(() => ({
             >
               <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                 <img
-                  v-if="artwork.artist.avatarUrl"
-                  :src="artwork.artist.avatarUrl"
+                  v-if="artwork.artist.profileImage"
+                  :src="artwork.artist.profileImage"
                   :alt="artwork.artist.displayName"
                   class="w-full h-full object-cover"
                 />
@@ -200,7 +262,6 @@ useHead(() => ({
             </NuxtLink>
           </div>
 
-          <!-- Price -->
           <div class="border-t border-b border-gray-200 py-6">
             <div v-if="artwork.price" class="flex items-baseline gap-3">
               <span class="text-3xl font-bold text-gray-900">
@@ -215,7 +276,6 @@ useHead(() => ({
             </div>
             <span v-else class="text-xl text-gray-600">Price on request</span>
 
-            <!-- Action Buttons -->
             <div v-if="artwork.status === 'AVAILABLE'" class="flex gap-3 mt-4">
               <button
                 class="flex-1 px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
@@ -233,7 +293,6 @@ useHead(() => ({
             </div>
           </div>
 
-          <!-- Details -->
           <div class="space-y-4">
             <h3 class="text-lg font-semibold text-gray-900">Details</h3>
             <dl class="grid grid-cols-2 gap-4">
@@ -264,19 +323,16 @@ useHead(() => ({
             </dl>
           </div>
 
-          <!-- Description -->
           <div v-if="artwork.description" class="space-y-2">
             <h3 class="text-lg font-semibold text-gray-900">Description</h3>
             <p class="text-gray-600 whitespace-pre-line">{{ artwork.description }}</p>
           </div>
 
-          <!-- Story -->
           <div v-if="artwork.story" class="space-y-2">
             <h3 class="text-lg font-semibold text-gray-900">The Story Behind</h3>
             <p class="text-gray-600 whitespace-pre-line">{{ artwork.story }}</p>
           </div>
 
-          <!-- Tags -->
           <div v-if="artwork.tags && artwork.tags.length > 0" class="space-y-2">
             <h3 class="text-lg font-semibold text-gray-900">Tags</h3>
             <div class="flex flex-wrap gap-2">
@@ -290,7 +346,6 @@ useHead(() => ({
             </div>
           </div>
 
-          <!-- Stats -->
           <div class="flex items-center gap-6 text-sm text-gray-500">
             <span class="flex items-center gap-1">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -309,8 +364,61 @@ useHead(() => ({
         </div>
       </div>
 
-      <!-- Not Found -->
-      <div v-else class="text-center py-12">
+      <section v-if="artwork" class="mt-12 pt-12 border-t border-earth-200">
+        <UiCommentSection
+          target-type="artwork"
+          :target-id="artwork.id"
+        />
+      </section>
+
+      <section v-if="artwork" class="mt-12 pt-12 border-t border-earth-200">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl font-display font-bold text-bark-800">Reviews</h2>
+          <button
+            v-if="authStore.isAuthenticated && !showReviewForm"
+            class="px-4 py-2 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600 transition-colors"
+            @click="showReviewForm = true"
+          >
+            Write a Review
+          </button>
+        </div>
+
+        <div v-if="!authStore.isAuthenticated" class="bg-earth-50 rounded-xl p-6 mb-8 text-center">
+          <p class="text-bark-600 mb-3">Sign in to leave a review</p>
+          <NuxtLink
+            :to="`/auth/login?redirect=${encodeURIComponent(route.fullPath)}`"
+            class="inline-block px-6 py-2 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600 transition-colors"
+          >
+            Sign In
+          </NuxtLink>
+        </div>
+
+        <div v-if="showReviewForm" class="mb-8">
+          <UiReviewForm
+            :artwork-id="artwork.id"
+            :edit-review="editingReview"
+            :loading="reviewsStore.loading"
+            @submit="handleReviewSubmit"
+            @cancel="cancelReviewForm"
+          />
+        </div>
+
+        <UiReviewList
+          :reviews="reviewsStore.reviews"
+          :stats="reviewsStore.currentArtworkStats"
+          :loading="reviewsStore.loading"
+          :pagination="reviewsStore.pagination"
+          :current-user-id="authStore.user?.id"
+          :is-admin="authStore.isAdmin"
+          @sort="handleSortChange"
+          @load-more="handleLoadMore"
+          @helpful="handleHelpful"
+          @edit="handleEditReview"
+          @delete="handleDeleteReview"
+        />
+      </section>
+
+      <div v-else-if="!isLoading && !artwork" class="text-center py-12">
         <h2 class="text-2xl font-bold text-gray-900">Artwork not found</h2>
         <p class="text-gray-600 mt-2">The artwork you're looking for doesn't exist or has been removed.</p>
         <NuxtLink

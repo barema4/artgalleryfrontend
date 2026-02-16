@@ -197,12 +197,10 @@ export const useArtworksStore = defineStore('artworks', {
       }
     },
 
-    // Image management
     async addArtworkImage(artworkId: string, data: CreateArtworkImageData) {
       try {
         const artworkService = useArtworkService()
         const image = await artworkService.addArtworkImage(artworkId, data)
-        // Update current artwork if it matches
         if (this.currentArtwork?.id === artworkId) {
           this.currentArtwork.images.push(image)
         }
@@ -217,7 +215,6 @@ export const useArtworksStore = defineStore('artworks', {
       try {
         const artworkService = useArtworkService()
         await artworkService.removeArtworkImage(artworkId, imageId)
-        // Update current artwork if it matches
         if (this.currentArtwork?.id === artworkId) {
           this.currentArtwork.images = this.currentArtwork.images.filter((img) => img.id !== imageId)
         }
@@ -232,7 +229,6 @@ export const useArtworksStore = defineStore('artworks', {
       try {
         const artworkService = useArtworkService()
         await artworkService.setPrimaryImage(artworkId, imageId)
-        // Update current artwork if it matches
         if (this.currentArtwork?.id === artworkId) {
           this.currentArtwork.images = this.currentArtwork.images.map((img) => ({
             ...img,
@@ -246,7 +242,6 @@ export const useArtworksStore = defineStore('artworks', {
       }
     },
 
-    // Admin actions
     async setArtworkFeatured(id: string, featured: boolean) {
       try {
         const artworkService = useArtworkService()
@@ -283,7 +278,6 @@ export const useArtworksStore = defineStore('artworks', {
       }
     },
 
-    // Utility actions
     clearCurrentArtwork() {
       this.currentArtwork = null
       this.currentArtworkStats = null

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const props = defineProps<{
-  modelValue: string
+const props = withDefaults(defineProps<{
+  modelValue?: string
   type?: string
   label?: string
   placeholder?: string
@@ -8,10 +8,12 @@ const props = defineProps<{
   disabled?: boolean
   required?: boolean
   autocomplete?: string
-}>()
+}>(), {
+  modelValue: '',
+})
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
+  'update:modelValue': [value: string | undefined]
 }>()
 
 const showPassword = ref(false)

@@ -18,12 +18,10 @@ const isLoading = ref(true)
 const error = ref('')
 const successMessage = ref('')
 
-// Status update
 const showStatusModal = ref(false)
 const newStatus = ref<UserStatus>('ACTIVE')
 const isUpdating = ref(false)
 
-// Delete confirmation
 const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 
@@ -137,7 +135,6 @@ onMounted(() => {
 <template>
   <div class="min-h-[80vh] py-8 px-4">
     <div class="max-w-4xl mx-auto">
-      <!-- Back Button -->
       <button
         class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
         @click="goBack"
@@ -148,7 +145,6 @@ onMounted(() => {
         Back to Users
       </button>
 
-      <!-- Messages -->
       <UiAlert v-if="successMessage" type="success" class="mb-6" dismissible @dismiss="successMessage = ''">
         {{ successMessage }}
       </UiAlert>
@@ -156,25 +152,20 @@ onMounted(() => {
         {{ error }}
       </UiAlert>
 
-      <!-- Loading -->
       <div v-if="isLoading" class="flex justify-center py-12">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
 
-      <!-- User Details -->
       <template v-else-if="user">
-        <!-- Header Card -->
         <div class="bg-white border border-gray-200 rounded-xl p-6 mb-6">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-4">
-              <!-- Avatar -->
               <div class="w-20 h-20 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
                 <span class="text-2xl font-bold text-white">
-                  {{ (user.profile?.firstName?.[0] || user.email[0]).toUpperCase() }}
+                  {{ (user.profile?.firstName?.[0] || user.email?.[0] || 'U').toUpperCase() }}
                 </span>
               </div>
 
-              <!-- Basic Info -->
               <div>
                 <h1 class="text-2xl font-bold text-gray-900">
                   {{ user.profile?.firstName ? `${user.profile.firstName} ${user.profile.lastName || ''}` : 'No name set' }}
@@ -215,7 +206,6 @@ onMounted(() => {
               </div>
             </div>
 
-            <!-- Actions -->
             <div class="flex items-center gap-2">
               <button
                 class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -233,9 +223,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Details Grid -->
         <div class="grid md:grid-cols-2 gap-6">
-          <!-- Account Information -->
           <div class="bg-white border border-gray-200 rounded-xl p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Account Information</h2>
             <dl class="space-y-4">
@@ -262,7 +250,6 @@ onMounted(() => {
             </dl>
           </div>
 
-          <!-- Profile Information -->
           <div class="bg-white border border-gray-200 rounded-xl p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Profile Information</h2>
             <dl class="space-y-4">
@@ -294,7 +281,6 @@ onMounted(() => {
             </dl>
           </div>
 
-          <!-- Timestamps -->
           <div class="bg-white border border-gray-200 rounded-xl p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Activity</h2>
             <dl class="space-y-4">
@@ -313,7 +299,6 @@ onMounted(() => {
             </dl>
           </div>
 
-          <!-- Artist Profile (if applicable) -->
           <div v-if="user.role === 'ARTIST'" class="bg-white border border-gray-200 rounded-xl p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Artist Profile</h2>
             <div v-if="user.artistProfile">
@@ -350,7 +335,6 @@ onMounted(() => {
         </div>
       </template>
 
-      <!-- Not Found -->
       <div v-else class="text-center py-12">
         <h2 class="text-2xl font-bold text-gray-900">User not found</h2>
         <p class="text-gray-600 mt-2">The user you're looking for doesn't exist or has been deleted.</p>
@@ -362,7 +346,6 @@ onMounted(() => {
         </NuxtLink>
       </div>
 
-      <!-- Status Modal -->
       <div
         v-if="showStatusModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
@@ -411,7 +394,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Delete Confirmation Modal -->
       <div
         v-if="showDeleteModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
