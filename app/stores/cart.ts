@@ -1,139 +1,268 @@
 import { defineStore } from 'pinia'
-import type { Product, ProductVariant } from '~/types/product'
-
-export interface CartItem {
-  id: string
-  product: Product
-  variant?: ProductVariant | null
-  quantity: number
-  addedAt: string
-}
+import type { Cart, CartItem, AddToCartData } from '~/types/cart'
+import { useCartService } from '~/services/cart.service'
+import { useAuthStore } from '~/stores/auth'
 
 interface CartState {
-  items: CartItem[]
+  cart: Cart | null
   isOpen: boolean
+  sessionId: string | null
+  isLoading: boolean
+}
+
+function generateSessionId(): string {
+  return `guest-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
 }
 
 export const useCartStore = defineStore('cart', {
   state: (): CartState => ({
-    items: [],
+    cart: null,
     isOpen: false,
+    sessionId: null,
+    isLoading: false,
   }),
 
   getters: {
-    itemCount: (state) => state.items.reduce((acc, item) => acc + item.quantity, 0),
+    items: (state): CartItem[] => state.cart?.items || [],
 
-    isEmpty: (state) => state.items.length === 0,
+    itemCount: (state): number => state.cart?.summary.itemCount || 0,
 
-    subtotal: (state) => {
-      return state.items.reduce((acc, item) => {
-        const price = item.variant?.price || item.product.price
-        return acc + price * item.quantity
-      }, 0)
-    },
+    isEmpty: (state): boolean => !state.cart || state.cart.items.length === 0,
+
+    subtotal: (state): number => state.cart?.summary.subtotal || 0,
+
+    currency: (state): string => state.cart?.summary.currency || 'USD',
 
     formattedSubtotal(): string {
-      const currency = this.items[0]?.product.currency || 'USD'
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency,
+        currency: this.currency,
       }).format(this.subtotal)
     },
 
-    getItemQuantity: (state) => (productId: string, variantId?: string) => {
-      const item = state.items.find(
-        (i) => i.product.id === productId && (variantId ? i.variant?.id === variantId : !i.variant)
+    summary: (state) => state.cart?.summary || null,
+
+    allItemsInStock: (state): boolean => state.cart?.summary.allItemsInStock || true,
+
+    hasDigitalItems: (state): boolean => state.cart?.summary.hasDigitalItems || false,
+
+    hasPhysicalItems: (state): boolean => state.cart?.summary.hasPhysicalItems || false,
+
+    getItemQuantity: (state) => (productId: string, variantId?: string): number => {
+      const item = state.cart?.items.find(
+        (i) => i.productId === productId && (variantId ? i.variantId === variantId : !i.variantId)
       )
       return item?.quantity || 0
     },
 
-    hasItem: (state) => (productId: string, variantId?: string) => {
-      return state.items.some(
-        (i) => i.product.id === productId && (variantId ? i.variant?.id === variantId : !i.variant)
-      )
-    },
-
-    itemsGroupedByArtist: (state) => {
-      const grouped: Record<string, CartItem[]> = {}
-
-      state.items.forEach((item) => {
-        const artistId = item.product.artwork?.artist?.id || 'unknown'
-        if (!grouped[artistId]) {
-          grouped[artistId] = []
-        }
-        grouped[artistId].push(item)
-      })
-
-      return grouped
+    hasItem: (state) => (productId: string, variantId?: string): boolean => {
+      return state.cart?.items.some(
+        (i) => i.productId === productId && (variantId ? i.variantId === variantId : !i.variantId)
+      ) || false
     },
   },
 
   actions: {
-    addItem(product: Product, variant?: ProductVariant | null, quantity: number = 1) {
-      const existingIndex = this.items.findIndex(
-        (item) =>
-          item.product.id === product.id &&
-          (variant ? item.variant?.id === variant.id : !item.variant)
-      )
+    // ============================================
+    // Session Management
+    // ============================================
 
-      if (existingIndex !== -1) {
-        const existingItem = this.items[existingIndex]!
-        const maxStock = variant?.stock || product.stock
-        const newQuantity = Math.min(existingItem.quantity + quantity, maxStock)
-        this.items[existingIndex] = { ...existingItem, quantity: newQuantity }
-      } else {
-        const cartItemId = variant
-          ? `${product.id}-${variant.id}`
-          : product.id
-
-        this.items.push({
-          id: cartItemId,
-          product,
-          variant: variant || null,
-          quantity: Math.min(quantity, variant?.stock || product.stock),
-          addedAt: new Date().toISOString(),
-        })
-      }
-    },
-
-    removeItem(itemId: string) {
-      this.items = this.items.filter((item) => item.id !== itemId)
-    },
-
-    updateQuantity(itemId: string, quantity: number) {
-      const index = this.items.findIndex((item) => item.id === itemId)
-      if (index === -1) return
-
-      const existingItem = this.items[index]!
-      const maxStock = existingItem.variant?.stock || existingItem.product.stock
-
-      if (quantity <= 0) {
-        this.removeItem(itemId)
-      } else {
-        this.items[index] = {
-          ...existingItem,
-          quantity: Math.min(quantity, maxStock),
+    initSessionId() {
+      if (!this.sessionId) {
+        const stored = localStorage.getItem('cart-session-id')
+        if (stored) {
+          this.sessionId = stored
+        } else {
+          this.sessionId = generateSessionId()
+          localStorage.setItem('cart-session-id', this.sessionId)
         }
       }
     },
 
-    incrementQuantity(itemId: string) {
-      const item = this.items.find((i) => i.id === itemId)
-      if (item) {
-        this.updateQuantity(itemId, item.quantity + 1)
+    clearSessionId() {
+      this.sessionId = null
+      localStorage.removeItem('cart-session-id')
+    },
+
+    // ============================================
+    // Fetch Cart
+    // ============================================
+
+    async fetchCart() {
+      const authStore = useAuthStore()
+      const cartService = useCartService()
+      this.isLoading = true
+
+      try {
+        if (authStore.isAuthenticated) {
+          this.cart = await cartService.getCart()
+        } else {
+          this.initSessionId()
+          if (this.sessionId) {
+            this.cart = await cartService.getGuestCart(this.sessionId)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch cart:', error)
+      } finally {
+        this.isLoading = false
       }
     },
 
-    decrementQuantity(itemId: string) {
-      const item = this.items.find((i) => i.id === itemId)
-      if (item) {
-        this.updateQuantity(itemId, item.quantity - 1)
+    // ============================================
+    // Add to Cart
+    // ============================================
+
+    async addItem(data: AddToCartData) {
+      const authStore = useAuthStore()
+      const cartService = useCartService()
+      this.isLoading = true
+
+      try {
+        if (authStore.isAuthenticated) {
+          this.cart = await cartService.addToCart(data)
+        } else {
+          this.initSessionId()
+          if (this.sessionId) {
+            this.cart = await cartService.addToGuestCart(this.sessionId, data)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to add item to cart:', error)
+        throw error
+      } finally {
+        this.isLoading = false
       }
     },
 
-    clearCart() {
-      this.items = []
+    // ============================================
+    // Update Cart Item
+    // ============================================
+
+    async updateQuantity(itemId: string, quantity: number) {
+      const authStore = useAuthStore()
+      const cartService = useCartService()
+      this.isLoading = true
+
+      try {
+        if (authStore.isAuthenticated) {
+          this.cart = await cartService.updateCartItem(itemId, { quantity })
+        } else if (this.sessionId) {
+          this.cart = await cartService.updateGuestCartItem(this.sessionId, itemId, { quantity })
+        }
+      } catch (error) {
+        console.error('Failed to update cart item:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
     },
+
+    async incrementQuantity(itemId: string) {
+      const item = this.items.find((i) => i.id === itemId)
+      if (item) {
+        await this.updateQuantity(itemId, item.quantity + 1)
+      }
+    },
+
+    async decrementQuantity(itemId: string) {
+      const item = this.items.find((i) => i.id === itemId)
+      if (item && item.quantity > 1) {
+        await this.updateQuantity(itemId, item.quantity - 1)
+      }
+    },
+
+    // ============================================
+    // Remove from Cart
+    // ============================================
+
+    async removeItem(itemId: string) {
+      const authStore = useAuthStore()
+      const cartService = useCartService()
+      this.isLoading = true
+
+      try {
+        if (authStore.isAuthenticated) {
+          this.cart = await cartService.removeCartItem(itemId)
+        } else if (this.sessionId) {
+          this.cart = await cartService.removeGuestCartItem(this.sessionId, itemId)
+        }
+      } catch (error) {
+        console.error('Failed to remove cart item:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    // ============================================
+    // Clear Cart
+    // ============================================
+
+    async clearCart() {
+      const authStore = useAuthStore()
+      const cartService = useCartService()
+      this.isLoading = true
+
+      try {
+        if (authStore.isAuthenticated) {
+          await cartService.clearCart()
+        } else if (this.sessionId) {
+          await cartService.clearGuestCart(this.sessionId)
+        }
+        this.cart = null
+      } catch (error) {
+        console.error('Failed to clear cart:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    // ============================================
+    // Validate Cart
+    // ============================================
+
+    async validateCart() {
+      const authStore = useAuthStore()
+      const cartService = useCartService()
+
+      try {
+        if (authStore.isAuthenticated) {
+          return await cartService.validateCart()
+        } else if (this.sessionId) {
+          return await cartService.validateGuestCart(this.sessionId)
+        }
+        return { valid: true, issues: [] }
+      } catch (error) {
+        console.error('Failed to validate cart:', error)
+        throw error
+      }
+    },
+
+    // ============================================
+    // Merge Guest Cart (on login)
+    // ============================================
+
+    async mergeGuestCart() {
+      if (!this.sessionId) return
+
+      const cartService = useCartService()
+      this.isLoading = true
+
+      try {
+        this.cart = await cartService.mergeCart({ sessionId: this.sessionId })
+        this.clearSessionId()
+      } catch (error) {
+        console.error('Failed to merge cart:', error)
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    // ============================================
+    // UI Actions
+    // ============================================
 
     openCart() {
       this.isOpen = true
@@ -146,45 +275,10 @@ export const useCartStore = defineStore('cart', {
     toggleCart() {
       this.isOpen = !this.isOpen
     },
-
-    validateCart(products: Product[]) {
-      const productMap = new Map(products.map((p) => [p.id, p]))
-
-      this.items = this.items.filter((item) => {
-        const currentProduct = productMap.get(item.product.id)
-        if (!currentProduct || !currentProduct.active) {
-          return false
-        }
-
-        const currentVariant = item.variant
-          ? currentProduct.variants?.find((v) => v.id === item.variant?.id)
-          : null
-
-        if (item.variant && !currentVariant) {
-          return false
-        }
-
-        const maxStock = currentVariant?.stock || currentProduct.stock
-        if (maxStock <= 0) {
-          return false
-        }
-
-        if (item.quantity > maxStock) {
-          item.quantity = maxStock
-        }
-
-        item.product = currentProduct
-        if (currentVariant) {
-          item.variant = currentVariant
-        }
-
-        return true
-      })
-    },
   },
 
   persist: {
     key: 'art-gallery-cart',
-    pick: ['items'],
+    pick: ['sessionId'],
   },
 })

@@ -53,7 +53,13 @@ export function useCategoryService() {
     },
 
     getCategoryBySlug: async (slug: string): Promise<Category> => {
-      return $fetch<Category>(`${API_BASE}/categories/${slug}`)
+      return $fetch<Category>(`${API_BASE}/categories/slug/${slug}`)
+    },
+
+    getCategoryById: async (id: string): Promise<Category> => {
+      return $fetch<Category>(`${API_BASE}/categories/${id}`, {
+        headers: getHeaders(),
+      })
     },
 
     createCategory: async (data: CreateCategoryData): Promise<Category> => {

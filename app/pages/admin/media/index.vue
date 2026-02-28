@@ -105,15 +105,14 @@ async function uploadFiles(filesToUpload: File[]) {
   successMessage.value = ''
 
   try {
-    if (filesToUpload.length === 1) {
-      await mediaService.uploadFile(filesToUpload[0], filters.folder || 'misc')
-    } else {
-      await mediaService.uploadMultiple(filesToUpload, filters.folder || 'misc')
-    }
-    successMessage.value = `Successfully uploaded ${filesToUpload.length} file(s)`
+    const folder = filters.folder || 'misc'
+    const results = await Promise.all(
+      filesToUpload.map((file) => mediaService.directUpload(file, folder)),
+    )
+    successMessage.value = `Successfully uploaded ${results.length} file(s)`
     await fetchFiles()
   } catch (e: any) {
-    error.value = e?.data?.message || 'Failed to upload files'
+    error.value = e?.data?.message || e?.message || 'Failed to upload files'
   } finally {
     isUploading.value = false
   }
@@ -570,7 +569,6 @@ onMounted(() => {
                 <p class="text-gray-500">Preview not available for this file type</p>
                 <a
                   :href="previewFile.url"
-                  target="_blank"
                   class="inline-block mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
                 >
                   Open File

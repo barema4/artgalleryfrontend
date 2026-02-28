@@ -1,7 +1,7 @@
 import type { User, LoginCredentials, RegisterData, AuthResponse } from '~/types/auth'
 import type { UserProfile, UserPreferences, UpdateProfileData, UpdatePreferencesData } from '~/types/user'
-
-const API_BASE = '/api/v1'
+import { useAuthService } from '~/services/auth.service'
+import { useUserService } from '~/services/user.service'
 
 interface AuthState {
   user: User | null
@@ -59,10 +59,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
 
       try {
-        const response = await $fetch<AuthResponse>(`${API_BASE}/auth/login`, {
-          method: 'POST',
-          body: credentials,
-        })
+        const authService = useAuthService()
+        const response = await authService.login(credentials)
 
         this.handleAuthResponse(response)
 
@@ -82,10 +80,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
 
       try {
-        const response = await $fetch<AuthResponse>(`${API_BASE}/auth/register`, {
-          method: 'POST',
-          body: data,
-        })
+        const authService = useAuthService()
+        const response = await authService.register(data)
 
         this.handleAuthResponse(response)
 
@@ -103,12 +99,8 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       try {
         if (this.accessToken) {
-          await $fetch(`${API_BASE}/auth/logout`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${this.accessToken}`,
-            },
-          }).catch(() => {})
+          const authService = useAuthService()
+          await authService.logout().catch(() => {})
         }
       } finally {
         this.clearAuth()
@@ -119,10 +111,8 @@ export const useAuthStore = defineStore('auth', {
       if (!this.refreshToken) return false
 
       try {
-        const response = await $fetch<AuthResponse>(`${API_BASE}/auth/refresh`, {
-          method: 'POST',
-          body: { refreshToken: this.refreshToken },
-        })
+        const authService = useAuthService()
+        const response = await authService.refreshToken(this.refreshToken)
 
         this.handleAuthResponse(response)
         return true
@@ -136,11 +126,8 @@ export const useAuthStore = defineStore('auth', {
       if (!this.accessToken) return false
 
       try {
-        const user = await $fetch<User>(`${API_BASE}/users/me`, {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-        })
+        const userService = useUserService()
+        const user = await userService.getMe()
 
         this.user = user
         return true
@@ -150,11 +137,8 @@ export const useAuthStore = defineStore('auth', {
           const refreshed = await this.refreshAccessToken()
           if (refreshed) {
             try {
-              const user = await $fetch<User>(`${API_BASE}/users/me`, {
-                headers: {
-                  Authorization: `Bearer ${this.accessToken}`,
-                },
-              })
+              const userService = useUserService()
+              const user = await userService.getMe()
               this.user = user
               return true
             } catch {
@@ -173,10 +157,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
 
       try {
-        await $fetch(`${API_BASE}/auth/forgot-password`, {
-          method: 'POST',
-          body: { email },
-        })
+        const authService = useAuthService()
+        await authService.forgotPassword({ email })
 
         return { success: true }
       } catch (error: any) {
@@ -192,10 +174,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
 
       try {
-        await $fetch(`${API_BASE}/auth/reset-password`, {
-          method: 'POST',
-          body: { token, password },
-        })
+        const authService = useAuthService()
+        await authService.resetPassword({ token, password })
 
         return { success: true }
       } catch (error: any) {
@@ -211,10 +191,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
 
       try {
-        await $fetch(`${API_BASE}/auth/verify-email`, {
-          method: 'POST',
-          body: { token },
-        })
+        const authService = useAuthService()
+        await authService.verifyEmail({ token })
 
         if (this.user) {
           this.user.emailVerified = true
@@ -229,15 +207,46 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    async resendVerificationEmail() {
+      this.loading = true
+      this.error = null
+
+      try {
+        const authService = useAuthService()
+        await authService.resendVerificationEmail()
+
+        return { success: true }
+      } catch (error: any) {
+        this.error = error?.data?.message || 'Failed to resend verification email.'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async changePassword(currentPassword: string, newPassword: string) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const authService = useAuthService()
+        await authService.changePassword({ currentPassword, newPassword })
+
+        return { success: true }
+      } catch (error: any) {
+        this.error = error?.data?.message || 'Failed to change password.'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
     async fetchProfile() {
       if (!this.accessToken) return
 
       try {
-        const profile = await $fetch<UserProfile>(`${API_BASE}/users/me/profile`, {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-        })
+        const userService = useUserService()
+        const profile = await userService.getProfile()
 
         this.profile = profile
         return { success: true, data: profile }
@@ -254,13 +263,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
 
       try {
-        const profile = await $fetch<UserProfile>(`${API_BASE}/users/me/profile`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-          body: data,
-        })
+        const userService = useUserService()
+        const profile = await userService.updateProfile(data)
 
         this.profile = profile
         if (this.user) {
@@ -279,11 +283,8 @@ export const useAuthStore = defineStore('auth', {
       if (!this.accessToken) return
 
       try {
-        const preferences = await $fetch<UserPreferences>(`${API_BASE}/users/me/preferences`, {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-        })
+        const userService = useUserService()
+        const preferences = await userService.getPreferences()
 
         this.preferences = preferences
         return { success: true, data: preferences }
@@ -300,13 +301,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
 
       try {
-        const preferences = await $fetch<UserPreferences>(`${API_BASE}/users/me/preferences`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-          body: data,
-        })
+        const userService = useUserService()
+        const preferences = await userService.updatePreferences(data)
 
         this.preferences = preferences
         return { success: true, data: preferences }

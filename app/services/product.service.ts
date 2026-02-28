@@ -60,7 +60,13 @@ export function useProductService() {
     },
 
     getProductBySlug: async (slug: string): Promise<Product> => {
-      return $fetch<Product>(`${API_BASE}/products/${slug}`)
+      return $fetch<Product>(`${API_BASE}/products/slug/${slug}`)
+    },
+
+    getProductById: async (id: string): Promise<Product> => {
+      return $fetch<Product>(`${API_BASE}/products/${id}`, {
+        headers: getHeaders(),
+      })
     },
 
     createProduct: async (data: CreateProductData): Promise<Product> => {

@@ -3,11 +3,14 @@ import type {
   NotificationListParams,
   NotificationListResponse,
   NotificationCount,
+  CreateNotificationData,
+  CreateBulkNotificationData,
 } from '~/types/notification'
 import { useNotificationService } from '~/services/notification.service'
 
 interface NotificationsState {
   notifications: Notification[]
+  currentNotification: Notification | null
   unreadCount: number
   totalCount: number
   loading: boolean
@@ -23,6 +26,7 @@ interface NotificationsState {
 export const useNotificationsStore = defineStore('notifications', {
   state: (): NotificationsState => ({
     notifications: [],
+    currentNotification: null,
     unreadCount: 0,
     totalCount: 0,
     loading: false,
@@ -205,6 +209,63 @@ export const useNotificationsStore = defineStore('notifications', {
 
     clearError() {
       this.error = null
+    },
+
+    // Additional Actions
+    async fetchNotificationById(id: string) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const notificationService = useNotificationService()
+        this.currentNotification = await notificationService.getNotificationById(id)
+        return { success: true, data: this.currentNotification }
+      } catch (error: unknown) {
+        const err = error as { data?: { message?: string } }
+        this.error = err?.data?.message || 'Failed to fetch notification'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Admin Actions
+    async createNotification(data: CreateNotificationData) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const notificationService = useNotificationService()
+        const notification = await notificationService.createNotification(data)
+        return { success: true, data: notification }
+      } catch (error: unknown) {
+        const err = error as { data?: { message?: string } }
+        this.error = err?.data?.message || 'Failed to create notification'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async createBulkNotifications(data: CreateBulkNotificationData) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const notificationService = useNotificationService()
+        const result = await notificationService.createBulkNotifications(data)
+        return { success: true, data: result }
+      } catch (error: unknown) {
+        const err = error as { data?: { message?: string } }
+        this.error = err?.data?.message || 'Failed to create bulk notifications'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    clearCurrentNotification() {
+      this.currentNotification = null
     },
   },
 })

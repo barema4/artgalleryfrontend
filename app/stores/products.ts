@@ -5,6 +5,9 @@ import type {
   CreateProductData,
   UpdateProductData,
   UpdateStockData,
+  CreateProductVariantData,
+  UpdateProductVariantData,
+  CreateProductImageData,
   ProductType,
 } from '~/types/product'
 import { useProductService } from '~/services/product.service'
@@ -283,6 +286,194 @@ export const useProductsStore = defineStore('products', {
 
     clearError() {
       this.error = null
+    },
+
+    // Variant Management Actions
+    async createVariant(productId: string, data: CreateProductVariantData) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const productService = useProductService()
+        const variant = await productService.createVariant(productId, data)
+
+        // Update product in list if present
+        const index = this.products.findIndex((p) => p.id === productId)
+        if (index !== -1 && this.products[index].variants) {
+          this.products[index].variants.push(variant)
+        }
+
+        // Update current product if it matches
+        if (this.currentProduct?.id === productId && this.currentProduct.variants) {
+          this.currentProduct.variants.push(variant)
+        }
+
+        return { success: true, data: variant }
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to create variant'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateVariant(productId: string, variantId: string, data: UpdateProductVariantData) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const productService = useProductService()
+        const variant = await productService.updateVariant(productId, variantId, data)
+
+        // Update product in list if present
+        const productIndex = this.products.findIndex((p) => p.id === productId)
+        if (productIndex !== -1 && this.products[productIndex].variants) {
+          const variantIndex = this.products[productIndex].variants.findIndex((v) => v.id === variantId)
+          if (variantIndex !== -1) {
+            this.products[productIndex].variants[variantIndex] = variant
+          }
+        }
+
+        // Update current product if it matches
+        if (this.currentProduct?.id === productId && this.currentProduct.variants) {
+          const variantIndex = this.currentProduct.variants.findIndex((v) => v.id === variantId)
+          if (variantIndex !== -1) {
+            this.currentProduct.variants[variantIndex] = variant
+          }
+        }
+
+        return { success: true, data: variant }
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to update variant'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteVariant(productId: string, variantId: string) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const productService = useProductService()
+        await productService.deleteVariant(productId, variantId)
+
+        // Update product in list if present
+        const productIndex = this.products.findIndex((p) => p.id === productId)
+        if (productIndex !== -1 && this.products[productIndex].variants) {
+          this.products[productIndex].variants = this.products[productIndex].variants.filter(
+            (v) => v.id !== variantId
+          )
+        }
+
+        // Update current product if it matches
+        if (this.currentProduct?.id === productId && this.currentProduct.variants) {
+          this.currentProduct.variants = this.currentProduct.variants.filter((v) => v.id !== variantId)
+        }
+
+        return { success: true }
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to delete variant'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Image Management Actions
+    async addImage(productId: string, data: CreateProductImageData) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const productService = useProductService()
+        const image = await productService.addImage(productId, data)
+
+        // Update product in list if present
+        const index = this.products.findIndex((p) => p.id === productId)
+        if (index !== -1 && this.products[index].images) {
+          this.products[index].images.push(image)
+        }
+
+        // Update current product if it matches
+        if (this.currentProduct?.id === productId && this.currentProduct.images) {
+          this.currentProduct.images.push(image)
+        }
+
+        return { success: true, data: image }
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to add image'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async removeImage(productId: string, imageId: string) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const productService = useProductService()
+        await productService.removeImage(productId, imageId)
+
+        // Update product in list if present
+        const productIndex = this.products.findIndex((p) => p.id === productId)
+        if (productIndex !== -1 && this.products[productIndex].images) {
+          this.products[productIndex].images = this.products[productIndex].images.filter(
+            (img) => img.id !== imageId
+          )
+        }
+
+        // Update current product if it matches
+        if (this.currentProduct?.id === productId && this.currentProduct.images) {
+          this.currentProduct.images = this.currentProduct.images.filter((img) => img.id !== imageId)
+        }
+
+        return { success: true }
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to remove image'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async setPrimaryImage(productId: string, imageId: string) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const productService = useProductService()
+        await productService.setPrimaryImage(productId, imageId)
+
+        // Helper to update images array
+        const updateImages = (images: typeof this.currentProduct.images) => {
+          if (!images) return
+          images.forEach((img) => {
+            img.isPrimary = img.id === imageId
+          })
+        }
+
+        // Update product in list if present
+        const productIndex = this.products.findIndex((p) => p.id === productId)
+        if (productIndex !== -1) {
+          updateImages(this.products[productIndex].images)
+        }
+
+        // Update current product if it matches
+        if (this.currentProduct?.id === productId) {
+          updateImages(this.currentProduct.images)
+        }
+
+        return { success: true }
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to set primary image'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
     },
   },
 })

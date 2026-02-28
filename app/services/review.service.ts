@@ -100,5 +100,26 @@ export function useReviewService() {
         headers: getHeaders(),
       })
     },
+
+    // Admin methods
+    getAllReviews: async (params?: ReviewListParams & { search?: string }): Promise<ReviewListResponse> => {
+      const query = new URLSearchParams()
+      if (params?.page) query.set('page', String(params.page))
+      if (params?.limit) query.set('limit', String(params.limit))
+      if (params?.sortBy) query.set('sortBy', params.sortBy)
+      if (params?.minRating) query.set('minRating', String(params.minRating))
+      if (params?.search) query.set('search', params.search)
+      const queryString = query.toString()
+
+      return $fetch<ReviewListResponse>(`${API_BASE}/reviews/admin${queryString ? `?${queryString}` : ''}`, {
+        headers: getHeaders(),
+      })
+    },
+
+    getReviewById: async (id: string): Promise<Review> => {
+      return $fetch<Review>(`${API_BASE}/reviews/${id}`, {
+        headers: getHeaders(),
+      })
+    },
   }
 }

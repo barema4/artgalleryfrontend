@@ -36,3 +36,35 @@ export interface MediaListResponse {
 export interface DeleteMultipleResponse {
   deleted: number
 }
+
+export interface UploadSignatureRequest {
+  resourceType: 'image' | 'video' | 'raw'
+  folder?: string
+  alt?: string
+}
+
+export interface UploadSignatureResponse {
+  signature: string
+  timestamp: number
+  apiKey: string
+  cloudName: string
+  publicId: string
+  folder: string
+  uploadUrl: string
+  resourceType: 'image' | 'video' | 'raw'
+}
+
+export interface ConfirmDirectUploadData {
+  publicId: string
+  version: string
+  signature: string
+  secureUrl: string
+  originalFilename: string
+  format: string
+  resourceType: 'image' | 'video' | 'raw'
+  bytes: number
+  width?: number
+  height?: number
+  folder?: string
+  alt?: string
+}

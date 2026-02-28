@@ -264,7 +264,6 @@ onMounted(() => {
                   v-if="getTargetLink(comment)"
                   :to="getTargetLink(comment)!"
                   class="text-primary-600 hover:text-primary-700"
-                  target="_blank"
                 >
                   View context
                 </NuxtLink>
